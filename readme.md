@@ -1,74 +1,110 @@
-# NVDA Add-on Scons Template #
+# 剪贴板朗读增强
 
-This package contains a basic template structure for NVDA add-on development, building, distribution and localization.
-For details about NVDA add-on development, please see the [NVDA Add-on Development Guide](https://github.com/nvdaaddons/DevGuide/wiki/NVDA-Add-on-Development-Guide).
-The NVDA add-on development/discussion list [is here](https://nvda-addons.groups.io/g/nvda-addons)
+本插件对剪贴板和刚听到的内容（即 NVDA 最后一次朗读的内容）做了增强支持，包括拷贝、追加、粘贴、单词解释以及按相应单位导航等功能。
 
-Copyright (C) 2012-2020 NVDA Add-on team contributors.
+## 兼容性
+- 兼容 NVDA 2019.3 及以上；
 
-This package is distributed under the terms of the GNU General Public License, version 2 or later. Please see the file COPYING.txt for further details.
+下表列出了相关功能的默认快捷键，您可以在 NVDA 的“输入首饰”对话框中更改这些默认快捷键。
 
-## Features
+## 快捷键表
 
-This template provides the following features you can use during NVDA add-on development and packaging:
+记忆技巧：
 
-* Automatic add-on package creation, with naming and version loaded from a centralized build variables file (buildVars.py) or command-line interface.
-	* See packaging section for details on using command-line switches when packaging add-ons with custom version information.
-* Manifest file creation using a template (manifest.ini.tpl). Build variables are replaced on this template. See below for add-on manifest specification.
-* Compilation of gettext mo files before distribution, when needed.
-	* To generate a gettext pot file, please run scons pot. A **addon-name.pot** file will be created with all gettext messages for your add-on. You need to check the buildVars.i18nSources variable to comply with your requirements.
-* Automatic generation of manifest localization files directly from gettext po files. Please make sure buildVars.py is included in i18nFiles.
-* Automatic generation of HTML documents from markdown (.md) files, to manage documentation in different languages.
+1. 笔记本方案使用基本组合键加四个箭头实现成对的功能；
+2. 台式机方案使用基本组合键加数字小键盘区域实现相应功能；
+3. 台式机方案小键盘区域与 NVDA 文本查看命令的快捷键高度类似，即小键盘区域的7、9为上/下一行； 4、6为上/下一词句； 1、3为上/下一字。
 
-## Requirements
+**提示： 下表可用 NVDA 的表格导航命令 CTRL + Alt +箭头查阅**
 
-You need the following software to use this code for your NVDA add-on development and packaging:
+| 名称 | 台式机方案 | 笔记本方案 |
+| --- | --- | --- |
+| 编辑文档标记开始点 | windows+小键盘 4 | NVDA+alt+[ |
+| 编辑文档标记结束点 | windows+小键盘 6 | NVDA+alt+] |
+| 编辑文档的当前光标位置 | windows+小键盘 5 | NVDA+alt+\ |
+| 编辑文档的字数统计 | windows+小键盘删除 | NVDA+alt+= |
+| 刚听到内容的上一个字 | ctrl+windows+小键盘 1 | NVDA+windows+左光标 |
+| 刚听到内容的当前字（双击解释） | ctrl+windows+小键盘 2 | NVDA+windows+. |
+| 刚听到内容的下一个字 | ctrl+windows+小键盘 3 | NVDA+windows+右光标 |
+| 刚听到内容的上一个词句 | ctrl+windows+小键盘 4 | NVDA+windows+shift+左光标 |
+| 刚听到内容的当前词句（解释英文单词） | ctrl+windows+小键盘 5 | NVDA+windows+shift+. |
+| 刚听到内容的下一个词句 | ctrl+windows+小键盘 6 | NVDA+windows+shift+右光标 |
+| 拷贝刚听到的内容到剪贴板 | NVDA+c | NVDA+c |
+| 粘贴刚听到的内容到当前光标位置 | NVDA+Shift+V | NVDA+Shift+V |
+| 追加刚听到的内容到剪贴板 | NVDA+d | NVDA+d |
+| 追加已选择的内容到剪贴板 | NVDA+Alt+a | NVDA+Alt+a |
+| 重复朗读刚听到的内容 | 未分配 | 未分配 |
+| 剪贴板第一行 | ctrl+小键盘 斜杠 | NVDA+alt+shift+上光标 |
+| 剪贴板最后一行 | ctrl+小键盘 星号 | NVDA+alt+shift+下光标 |
+| 剪贴板向上十行 | ctrl+小键盘 加号 | NVDA+alt+shift+上翻页 |
+| 剪贴板向下十行 | ctrl+小键盘 减号 | NVDA+alt+shift+下翻页 |
+| 剪贴板上一行 | ctrl+小键盘 7 | NVDA+alt+上光标 |
+| 从剪贴板当前行向下朗读 | ctrl+小键盘 8 | NVDA+alt+l |
+| 剪贴板的下一行 | ctrl+小键盘 9 | NVDA+alt+下光标 |
+| 剪贴板上一个词句 | ctrl+小键盘 4 | NVDA+alt+shift+左光标 |
+| 剪贴板当前词句（解释英文单词） | ctrl+小键盘 5 | NVDA+alt+shift+. |
+| 剪贴板下一个词句 | ctrl+小键盘 6 | NVDA+alt+shift+右光标 |
+| 剪贴板上一个字 | ctrl+小键盘 1 | NVDA+alt+左光标 |
+| 剪贴板当前字（双击解释） | ctrl+小键盘 2 | NVDA+alt+. |
+| 剪贴板下一个字 | ctrl+小键盘 3 | NVDA+alt+右光标 |
+| 剪贴板综述 | ctrl+数字键盘删除 | NVDA+alt+' |
+| 打开剪贴板编辑器 | NVDA+E | NVDA+E |
+| 朗读农历时间 | NVDA+f11 | NVDA+f11 |
+| 打开URL | ctrl+数字键盘 回车 | NVDA+alt+回车 |
 
-* a Python distribution (3.7 or later is recommended). Check the [Python Website](https://www.python.org) for Windows Installers.
-* Scons - [Website](https://www.scons.org/) - version 3.1.0 or greater. Install it using **pip** or grab an windows installer from the website.
-* GNU Gettext tools, if you want to have localization support for your add-on - Recommended. Any Linux distro or cygwin have those installed. You can find windows builds [here](https://gnuwin32.sourceforge.net/downlinks/gettext.php).
-* Markdown-2.0.1 or greater, if you want to convert documentation files to HTML documents. You can [Download Markdown-2.0.1 installer for Windows](https://pypi.python.org/pypi/Markdown/2.0.1) or get it using `pip install markdown`.
+## 贡献者
+- 大可 （主要开发者）；
+- Eureka （协助开发者）；
+- 永远的星光 （代码贡献者）；
+- 好奇的 01 （代码贡献者）；
+- 1eez （词典数据提供者）
 
-## Usage
+## V2.0 更新日志
+*本版代码全部重写。*
 
-### To create a new NVDA add-on, taking advantage of this template:
+1. 剪贴板监控改为再插件内部实现，基于此全面优化剪贴板的详细访问逻辑：
+    - 当剪贴板内是文件时，按综述剪贴板的快捷键，可以朗读相关的文件数量及大小等信息。
+    - 当剪贴板内是文件时，按逐行访问的快捷键，可以依次听取文件名称和路径，并且会给出音效提示，以与剪贴板内文本相区分。
+2. 访问剪贴板，移动到首尾以及逐字词跨行时，增加音效提示；
+3. 访问刚听到的内容，移动到首尾时，增加音效提示；
+4. 尝试修复混合使用逐字词访问剪贴板，偶尔出现位置错乱的情况；
+5. 优化NVDA+F12朗读时间日期的详细程度；
+6. CTRL+numpad8，改为从剪贴板当前行向下朗读；
+7. 增加使用 NVDA + Alt + A 将以选文本追加到剪贴板的功能；
+8. 兼容 NVDA 2021.1 ；
+9. 在逐字导航刚听到的内容过程中，使词句位置跟随；
+10. 修复当剪贴板编辑器内无内容时“更新”和“更新并关闭”无效的 Bug ；
+11. 为剪贴板编辑器的“查找”、“替换”对话框内的按钮添加了加速键；
+12. 在不支持编辑文档字数统计，不支持编辑文档选择开始 / 结束点以及不支持查看编辑文档当前位置等场景下给出提示；
+13. 增加粘贴刚听到的内容到当前光标位置 NVDA + Shift + V ；
+14. 更换了全新的本地词典数据库，将词条数目增加到 10 万以上；
+15. 剪贴板编辑器默认将以最大化显示；
+16. 其他的一些细节优化。
 
-1. Create an empty folder to hold the files for your add-on.
-2. Copy the **site_scons** folder, and the following files, into your new empty folder: **buildVars.py**, **manifest.ini.tpl**, **manifest-translated.ini.tpl**, **sconstruct**, **.gitignore**, and **.gitattributes**
-3. Create an **addon** folder inside your new folder. Inside the **addon* folder, create needed folders for the add-on modules (e.g. appModules, synthDrivers, etc.). An add-on may have one or more module folders.
-4. In the **buildVars.py** file, change variable **addon_info** with your add-on's information (name, summary, description, version, author and url).
-5. Put your code in the usual folders for NVDA extension, under the **addon** folder. For instance: globalPlugins, synthDrivers, etc.
-6. Gettext translations must be placed into addon\locale\<lang>/LC_MESSAGES\nvda.po. 
+---
 
-#### Add-on manifest specification
+## V1.2.5 更新日志
+1. 修正剪贴板监控程序的调用方式，避免进程驻留。
+2. 重写剪贴板监控，解决文件大小统计错误的问题；
+    - PS： 感谢小康老师编写的剪贴板监控程序。
 
-An add-on manifest generated manually or via **buildVars.py** must include the following information:
+## V1.2.2 更新日志
+1. 修正在某些日期获取不到农历节气信息；
+2. 剪贴板内移动字词时可跨行移动。
 
-* Name (string): a unique identifier for the add-on. It must use camel case (e.g. someModule).
-* Summary (string): name as shown on NVDA's Add-ons Manager.
-* Description (string): a short detailed description about the add-on.
-* Version (string)
-* Author (string and an email address): one or more add-on author contact information in the form "name <email@address>".
-* URL (string): a web address where the add-on information can be found (typically community add-ons website address (https://addons.nvda-project.org) is used).
-* docFileName (string): name of the documentation file.
-* minimumNVDAVersion (year.major or year.major.minor): the earliest version of NVDA the add-on is compatible with (e.g. 2019.3). Add-ons are expected to use features introduced in this version of NVDA or declare compatibility with it.
-* lastTestedNVDAVersion (year.major or year.major.minor): the latest or last tested version of NVDA the add-on is said to be compatible with (e.g. 2020.3). Add-on authors are expected to declare this value after testing add-ons with the version of NVDA specified.
-* addon_updateChannel (string or None): the update channel for the add-on release.
+## V1.2 更新日志
+1. 增加对连续英文单词的拆分支持，比如： "GetWindowLong" 使用上/下一个词句浏览可拆分为 "Get"、"Window"、"Long"；
+2. 快捷键浏览剪贴板时可记忆焦点位置；
+3. 增强打开URL的能力，增加了对于 "nvdaremote://"（NVDA 远程链接协议）的支持。
+4. 集成了沉浮老师的剪贴板监控程序。
 
-### To manage documentation files for your addon:
-
-1. Copy the **readme.md** file for your add-on to the first created folder, where you copied **buildVars.py**. You can also copy **style.css** to improve the presentation of HTML documents.
-2. Documentation files (named **readme.md**) must be placed into addon\doc\<lang>/.
-
-### To package the add-on for distribution:
-
-1. Open a command line, change to the folder that has the **sconstruct** file (usually the root of your add-on development folder) and run the **scons** command. The created add-on, if there were no errors, is placed in the current directory.
-2. You can further customize variables in the **buildVars.py** file.
-3. You can also customize version and update channel information from command line by passing the following switches when running scons:
-	* version: add-on version string.
-	* channel: update channel (do not use this switch unless you know what you are doing).
-	* dev: suitable for development builds, names the add-on according to current date (yyyymmdd) and sets update channel to "dev".
-
-Note that this template only provides a basic add-on structure and build infrastructure. You may need to adapt it for your specific needs.
-
-If you have any issues please use the NVDA addon list mentioned above.
+## V1.0 更新日志
+1. 增加对剪贴板内容更详细的访问：
+    - 上、下、当前词句（解释英文单词）；
+    - 上、下、当前字（双击解释）；
+2. 增加打开URL功能（代码来自好奇的 01）。
+3. 词句切换后将逐字移动的焦点放置在词句的开始处，便于拼读。
+4. 重新设计了默认快捷键：
+    - 增加笔记本方案；
+    - 避免占用 NVDA 本身快捷键；
+5. 可在插件管理器点“帮助”按钮查看使用说明。
