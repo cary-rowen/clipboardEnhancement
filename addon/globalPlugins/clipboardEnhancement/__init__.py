@@ -22,7 +22,7 @@ except ImportError:
 
 
 class GlobalPlugin(globalPluginHandler.GlobalPlugin):
-	scriptCategory = '剪贴板增强'
+	scriptCategory = "剪贴板增强"
 	formatConfig = {
 	"detectFormatAfterCursor": True,
 	"reportFontName": False,
@@ -54,14 +54,14 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 	def __init__(self):
 		super().__init__()
 		self.flg = 1
-		self.spoken2 = self.spoken = ''
+		self.spoken2 = self.spoken = ""
 		self.spoken_word = self.spoken_char = -1
 		self.oldSpeak = speech.speak
 		speech.speak = self.newSpeak
-		self.text = ''
+		self.text = ""
 		self.files = []
-		self.info = ''
-		self.lines = ['无数据',]
+		self.info = ""
+		self.lines = ["无数据",]
 		self.line = self.char = self.word =-1
 		self.SpokenPreWordPos = -1 #self.preWordPos = 0
 		self.monitor = None
@@ -71,7 +71,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		callLater(200, self.loadFiles)
 
 	def clipboard(self):
-		self.editor = MyFrame(gui.mainFrame, title='剪贴板编辑器')
+		self.editor = MyFrame(gui.mainFrame, title="剪贴板编辑器")
 		self.monitor = ClipboardMonitor(self.editor.GetHandle())
 		self.monitor.customization = self.func
 		callLater(100, self.monitor.get_clipboard_data)
@@ -81,21 +81,21 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		self.Dict = loadJson()
 
 	def func(self):
-		self.text = ''
+		self.text = ""
 		self.files = None
-		self.info = '无数据'
-		self.lines = ['无数据']
+		self.info = "无数据"
+		self.lines = ["无数据"]
 		self.word = self.line = self.char = -1
 		data = self.monitor.getData()
 		if isinstance(data, str):
 			self.text = data
-			self.lines = data.split('\n')
+			self.lines = data.split("\n")
 		elif isinstance(data, list):
 			self.files = data
 			self.lines = list(fileLists(data))
 		elif isinstance(data, bytes):
-			self.lines = ['图片',]
-			self.info = '图片'
+			self.lines = ["图片",]
+			self.info = "图片"
 
 	@scriptHandler.script(
 		description=_("剪贴板综述"), 
@@ -164,11 +164,11 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		ui.message(self.spoken)
 
 	def newSpeak(self, sequence, *args, **kwargs):
-		data = ''
+		data = ""
 		if isinstance(sequence, str):
 			data=sequence
 		else:
-			data = ''.join([i for i in sequence if isinstance(i, str)])
+			data = "".join([i for i in sequence if isinstance(i, str)])
 		if self.flg ==1: # 捕获最后依次的朗读
 			self.spoken = data
 			self.spoken_word = self.spoken_char = -1
@@ -188,48 +188,48 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		if repeatCount == 1:
 			api.copyToClip(self.spoken2)
 			self.flg = 0
-			ui.message('拷贝')
+			ui.message("拷贝")
 		elif repeatCount == 0:
 			api.copyToClip(self.spoken)
 			self.flg = 0
-			ui.message('拷贝')
+			ui.message("拷贝")
 
 	def _getClipText(self):
-		text = ''
+		text = ""
 		try:
 			text = api.getClipData()
 		except:
 			return text
 		if isinstance(text, str) and text:
 			return text
-		return ''
+		return ""
 
 	@scriptHandler.script(
 		description=_("追加刚听到的内容到剪贴板"), 
 		gesture="kb:NVDA+D")
 	def script_append(self, gesture):
-		clip =''# self._getClipText()
+		clip ="" # self._getClipText()
 		count = scriptHandler.getLastScriptRepeatCount()
 		if count == 1:
-			end = '\n' if not self.text.endswith('\n') and self.text else ''
+			end = "\n" if not self.text.endswith("\n") and self.text else ""
 			clip = end.join((self.text, self.spoken2))
 			api.copyToClip(clip)
 			self.flg = 0
-			ui.message('添加')
+			ui.message("添加")
 		elif count == 0:
-			end = '\n' if not self.text.endswith('\n') and self.text else ''
+			end = "\n" if not self.text.endswith("\n") and self.text else ""
 			clip = end.join((self.text, self.spoken))
 			api.copyToClip(clip)
 			self.flg = 0
-			ui.message('添加')
+			ui.message("添加")
 
 	@scriptHandler.script(
 		description=_("打开剪贴板编辑器"), 
 		gesture="kb:NVDA+E")
 	def script_clipEditor(self, gesture):
 		if self.editor is None:
-			self.editor = MyFrame(gui.mainFrame, title='剪贴板编辑器')
-		self.editor.edit.SetValue(self.text.replace('\r\n', '\n'))
+			self.editor = MyFrame(gui.mainFrame, title="剪贴板编辑器")
+		self.editor.edit.SetValue(self.text.replace("\r\n", "\n"))
 		self.editor.Show(True)
 		self.editor.Maximize(True)
 		self.editor.Raise()
@@ -358,26 +358,37 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		text = self.lines[self.line]
 		self.char += d
 		l = len(text)
+# 如果到了行首
 		if self.char < 0:
+# 且当前不是第一行
 			if self.line > 0:
+# 则切换到前一行
 				self.line -= 1
 				text = self.lines[self.line]
+# 字符位置从这一行的行末开始
 				self.char = len(text)-1
 				words = segmentWord(text)[0]
 				self.word =  len(words) - 1
-			else:
+			else: # 如果移动到了第一行的行首
 				self.char = 0
 			beep(12000, 6)
+# 如果到了行尾
 		elif self.char >= l:
+# 且当前不是最后一行
 			if self.line < len(self.lines)-1:
+# 则切换到后一行
 				self.line +=1
 				text = self.lines[self.line]
+# 字符位置从这一行的行首开始
 				self.char = 0
 				self.word = 0
-			else:
+			else: # 如果移动到了最后一行的行尾
 				self.char = l-1
 			beep(12000, 6)
+
 		if text:
+			p = segmentWord(text)[1]
+			self.word = charPToWordP(p, self.char)
 			speech.speakSpelling(text[self.char])
 		else:
 			ui.message("空白")
@@ -390,32 +401,40 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		self.word += d
 		f = False
 
-		if self.word >= l:# 如果是本行内最后一个单词
-			if self.line < len(self.lines)-1: # 且不是最后一行
-				self.line+=1 # 则切换到下一行
+# 如果是本行内最后一个单词
+		if self.word >= l:
+# 且不是最后一行
+			if self.line < len(self.lines)-1:
+# 则切换到下一行
+				self.line+=1
 				text = self.lines[self.line]
 				words = segmentWord(text)[0]
 				self.word = 0
-				self.char = text.find(words[self.word])-1
+#				self.char = text.find(words[self.word])-1
 				f = True
 			else: # 如果是最后一行，定位到最后一个单词
 				self.word = l -1
 			beep(13500, 4)
-
-		elif self.word < 0 and d!=0: # 如果是本行内第一个单词
-			if self.line > 0: # 且不是第一行
-				self.line -= 1 # 则切换到前一行
+# 如果是本行内第一个单词
+		elif self.word < 0 and d!=0:
+# 且不是第一行
+			if self.line > 0:
+# 则切换到前一行
+				self.line -= 1
 				text = self.lines[self.line]
 				words = segmentWord(text)[0]
 				self.word = len(words)-1
-				self.char = text.rfind(words[self.word])-1
+#				self.char = text.rfind(words[self.word])-1
 				f = True
-			else: # 如果是第一行，定位到第一个单词
+# 如果是第一行，定位到第一个单词
+			else:
 				self.word = 0
 			beep(13500, 4)
 
-
-		self.char = text.find(words[self.word])-1
+		p = segmentWord(text)[1]
+#		self.spoken_word = charPToWordP(p, self.spoken_char)
+		self.char = p[self.word]-1
+#		self.char = text.find(words[self.word])-1
 		word = words[self.word]
 		ui.message(word)
 		word = word.lower()
@@ -490,7 +509,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		pos = api.getReviewPosition().copy()
 		log.info(pos)
 		if not ('_startOffset' in dir(pos) or '_rangeObj' in dir(pos)):
-			ui.message('未获取到相关信息')
+			ui.message("未获取到相关信息")
 			return
 		if '_startOffset' in dir(pos):
 			pos._endOffset = 387419741
@@ -506,7 +525,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		if repeats == 0:
 			text = speech.getFormatFieldSpeech(formatField, formatConfig=self.formatConfig) if formatField else None
 			if text:
-				text = ''.join(text)
+				text = "".join(text)
 				if text.find(u"页") >= 0:
 					text = text[1:text.find(u"页") + 1]
 				else:
@@ -540,7 +559,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		if repeats == 0:
 			text = speech.getFormatFieldSpeech(formatField, formatConfig=self.formatConfig) if formatField else None
 			if text:
-				text = ''.join(text)
+				text = "".join(text)
 				if text.find(u"页") >= 0:
 					text = text[1:len(text)]
 				ui.message(u"" + text.replace(u" ", u"").replace(u"行", u"") + u"航" + str(column) + u"列")
@@ -642,6 +661,6 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		gestures=["kb:NVDA+`"])
 	def script_pasteLastSpoken(self, gesture):
 		self.monitor.work = False
-		api.copyToClip(self.spoken.rstrip('\r\n'))
+		api.copyToClip(self.spoken.rstrip("\r\n"))
 		KeyboardInputGesture.fromName("control+v").send()
 		Thread(target = pasteBack, args=(self,)).start()
