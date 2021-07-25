@@ -59,7 +59,6 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		self.oldSpeak = speech.speak
 		speech.speak = self.newSpeak
 		self.text = ''
-		self.CTRL = set(((17, False),))
 		self.files = []
 		self.info = ''
 		self.lines = ['无数据',]
@@ -148,13 +147,13 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 
 	def switchLine(self, step):
 		self.line += step
-		if self.files: beep(6500, 10)
 		if self.line < 0:
 			self.line = 0
 			beep(9800, 5)
 		if self.line >= len(self.lines):
 			self.line = len(self.lines) - 1
 			beep(9800, 5)
+		if self.files: beep(6500, 10)
 		ui.message(self.lines[self.line])
 		self.word = self.char = -1
 
@@ -170,14 +169,14 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			data=sequence
 		else:
 			data = ''.join([i for i in sequence if isinstance(i, str)])
-		if self.flg ==1:
+		if self.flg ==1: # 捕获最后依次的朗读
 			self.spoken = data
 			self.spoken_word = self.spoken_char = -1
 			self.SpokenPreWordPos = -1
-		elif self.flg == 2:
+		elif self.flg == 2: # 捕获缓冲区中的朗读
 			self.spoken2 = data
 			self.flg = 1
-		else:
+		else: # 不补货
 			self.flg = 1
 		self.oldSpeak(sequence, *args, **kwargs)
 
@@ -236,7 +235,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		self.editor.Raise()
 
 	def switchSpokenWord(self, d=0):
-		words = segmentWord(self.spoken)
+		words = segmentWord(self.spoken)[0]
 		if not words: return
 		self.spoken_word += d
 		l = len(words)
@@ -249,15 +248,18 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		word = words[self.spoken_word].lower()
 		self.flg = 2
 		ui.message(word)
+		# 解释当前单词
 		if d == 0 and isAlpha(word):
 			word = translateWord(self.Dict, word)
 			if word:
 				self.flg = 2
 				ui.message(word)
+		# 下一个单词
 		elif d == 1:
 			i = self.spoken.find(words[self.spoken_word], self.SpokenPreWordPos+1)
 			self.spoken_char=i-1 if i>-1 else self.SpokenPreWordPos
 			if i>-1: self.SpokenPreWordPos = i
+		# 前一个单词
 		elif d == -1:
 			i = self.spoken.rfind(words[self.spoken_word], 0, self.SpokenPreWordPos)
 			self.spoken_char= self.SpokenPreWordPos if i<0 else i-1
@@ -286,7 +288,9 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		gestures=["kb(desktop):Control+Windows+Numpad3", "kb(laptop):NVDA+Windows+RightArrow"])
 	def script_nextSpokenChar(self, gesture):
 		if not self.spoken: return
+		p = segmentWord(self.spoken)[1]
 		self.spoken_char += 1
+		self.spoken_word = charPToWordP(p, self.spoken_char)
 		l = len(self.spoken)
 		if self.spoken_char >= l: 
 			self.spoken_char = l-1
@@ -294,12 +298,17 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		self.flg = 2
 		speech.speakSpelling(self.spoken[self.spoken_char])
 
+
+
+
 	@scriptHandler.script(
 		description=_("刚听到内容的上一个字"), 
 		gestures=["kb(desktop):Control+Windows+Numpad1", "kb(laptop):NVDA+Windows+LeftArrow"])
 	def script_previousSpokenChar(self, gesture):
 		if not self.spoken: return
+		p = segmentWord(self.spoken)[1]
 		self.spoken_char -= 1
+		self.spoken_word = charPToWordP(p, self.spoken_char)
 		if self.spoken_char < 0: 
 			self.spoken_char = 0
 			beep(13500, 4)
@@ -321,7 +330,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 	def script_currentChar(self, gesture):
 		if self.line < 0: self.line = 0
 		text = self.lines[self.line]
-		if not text: return ui.message('空白')
+		if not text: return ui.message("空白")
 		if self.char < 0: self.char = 0
 		self._charExplanation(text[self.char])
 
@@ -347,7 +356,6 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 	def _switchChar(self, d):
 		if self.line < 0: self.line = 0
 		text = self.lines[self.line]
-#		if not text: return
 		self.char += d
 		l = len(text)
 		if self.char < 0:
@@ -355,7 +363,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 				self.line -= 1
 				text = self.lines[self.line]
 				self.char = len(text)-1
-				words = segmentWord(text)
+				words = segmentWord(text)[0]
 				self.word =  len(words) - 1
 			else:
 				self.char = 0
@@ -372,37 +380,41 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		if text:
 			speech.speakSpelling(text[self.char])
 		else:
-			ui.message('空白')
+			ui.message("空白")
 
 	def _switchWord(self, d=0):
 		if self.line < 0: self.line = 0
 		text = self.lines[self.line]
-		words = segmentWord(text)
+		words = segmentWord(text)[0]
 		l = len(words)
 		self.word += d
 		f = False
-		if self.word >= l:
-			if self.line < len(self.lines)-1:
-				self.line+=1
+
+		if self.word >= l:# 如果是本行内最后一个单词
+			if self.line < len(self.lines)-1: # 且不是最后一行
+				self.line+=1 # 则切换到下一行
 				text = self.lines[self.line]
-				words = segmentWord(text)
+				words = segmentWord(text)[0]
 				self.word = 0
 				self.char = text.find(words[self.word])-1
 				f = True
-			else:
+			else: # 如果是最后一行，定位到最后一个单词
 				self.word = l -1
 			beep(13500, 4)
-		elif self.word < 0:
-			if self.line > 0:
-				self.line -= 1
+
+		elif self.word < 0 and d!=0: # 如果是本行内第一个单词
+			if self.line > 0: # 且不是第一行
+				self.line -= 1 # 则切换到前一行
 				text = self.lines[self.line]
-				words = segmentWord(text)
+				words = segmentWord(text)[0]
 				self.word = len(words)-1
 				self.char = text.rfind(words[self.word])-1
 				f = True
-			else:
+			else: # 如果是第一行，定位到第一个单词
 				self.word = 0
 			beep(13500, 4)
+
+
 		self.char = text.find(words[self.word])-1
 		word = words[self.word]
 		ui.message(word)
@@ -410,11 +422,12 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		if d == 0 and isAlpha(word):
 			word = translateWord(self.Dict, word)
 			if word: ui.message(word)
+
 		if f: return
-#		if self.char < 0: self.char = 0
 		if d ==1:
 			i = text.find(words[self.word], self.char)-1
 			self.char = i if i>-1 else self.char
+
 		elif d == -1:
 			i = text.rfind(words[self.word], 0, self.char)-1
 			self.char = i if i>-1 else self.char
@@ -626,8 +639,8 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 
 	@scriptHandler.script(
 		description=_("粘贴刚听到的内容"), 
-		gestures=["kb:NVDA+Shift+V"])
-	def script_pasteLine(self, gesture):
+		gestures=["kb:NVDA+`"])
+	def script_pasteLastSpoken(self, gesture):
 		self.monitor.work = False
 		api.copyToClip(self.spoken.rstrip('\r\n'))
 		KeyboardInputGesture.fromName("control+v").send()

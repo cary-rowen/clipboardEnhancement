@@ -1,3 +1,4 @@
+import api
 from api import copyToClip
 from ui import message
 from os.path import basename, join, dirname, isfile, getsize
@@ -19,12 +20,30 @@ def fileLists(files):
 		yield f'{basename(files[i])}, 第{i+1}之{l}项， {files[i]}'
 
 m = re.compile(r"[\u4e00-\uf95a]+|[A-Z]?[a-z]+|[A-Z]+(?=[A-Z][a-z])|[0-9]+|[A-Z]+(?![A-Z])")
-
 def segmentWord(text):
-	words = m.findall(text)
-	words = words if len(words)>0 else [text,]
-	#words = list(filter(None, words))
-	return words
+	words = []
+	positions = []
+	for word in m.finditer(text):
+		start = word.start()
+		end = word.end()
+		words.append(word.string[start:end])
+		positions.append(start)
+	if not words:
+		words.append(text)
+		positions.append(0)
+	return words, positions
+
+def charPToWordP(word_P, char_P):
+	temp_Char =0
+	for i in range(len(word_P)):
+		if i==len(word_P)-1 and char_P>=word_P[i]:
+			temp_Char=i
+			break
+		if char_P >= word_P[i] and char_P < word_P[i+1]:
+			temp_Char=i
+			break
+	return temp_Char
+
 
 def isAlpha(text):
 	for c in text:
