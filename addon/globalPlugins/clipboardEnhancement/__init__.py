@@ -38,7 +38,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		self.info = ""
 		self.lines = ["无数据",]
 		self.line = self.char = self.word =-1
-		self.SpokenPreWordPos = -1 #self.preWordPos = 0
+#		self.SpokenPreWordPos = -1 #self.preWordPos = 0
 		self.monitor = None
 		self.editor = None
 		callLater(100, self.clipboard)
@@ -147,7 +147,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		if self.flg ==1: # 捕获最后依次的朗读
 			self.spoken = data
 			self.spoken_word = self.spoken_char = -1
-			self.SpokenPreWordPos = -1
+#			self.SpokenPreWordPos = -1
 		elif self.flg == 2: # 捕获缓冲区中的朗读
 			self.spoken2 = data
 			self.flg = 1
@@ -210,6 +210,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		self.editor.Raise()
 
 	def switchSpokenWord(self, d=0):
+# 分词，用[0]得到分割后的单词列表
 		words = segmentWord(self.spoken)[0]
 		if not words: return
 		self.spoken_word += d
@@ -220,25 +221,21 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		if self.spoken_word<0:
 			self.spoken_word=0
 			beep(13500, 4)
+
 		word = words[self.spoken_word].lower()
 		self.flg = 2
 		ui.message(word)
+
 		# 解释当前单词
 		if d == 0 and isAlpha(word):
 			word = translateWord(self.Dict, word)
 			if word:
 				self.flg = 2
 				ui.message(word)
-		# 下一个单词
-		elif d == 1:
-			i = self.spoken.find(words[self.spoken_word], self.SpokenPreWordPos+1)
-			self.spoken_char=i-1 if i>-1 else self.SpokenPreWordPos
-			if i>-1: self.SpokenPreWordPos = i
-		# 前一个单词
-		elif d == -1:
-			i = self.spoken.rfind(words[self.spoken_word], 0, self.SpokenPreWordPos)
-			self.spoken_char= self.SpokenPreWordPos if i<0 else i-1
-			if i>-1: self.SpokenPreWordPos = i
+		# 上/下一个单词
+		else:
+			p = segmentWord(self.spoken)[1]
+			self.spoken_char = p[self.spoken_word]-1
 
 	@scriptHandler.script(
 		description=_("刚听到内容的下一个词句"), 
@@ -406,25 +403,18 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 				self.word = 0
 			beep(13500, 4)
 
-		p = segmentWord(text)[1]
-#		self.spoken_word = charPToWordP(p, self.spoken_char)
-		self.char = p[self.word]-1
-#		self.char = text.find(words[self.word])-1
+		if not d ==0:
+			p = segmentWord(text)[1]
+			self.char = p[self.word]-1
+
 		word = words[self.word]
 		ui.message(word)
+
 		word = word.lower()
 		if d == 0 and isAlpha(word):
 			word = translateWord(self.Dict, word)
 			if word: ui.message(word)
-
 		if f: return
-		if d ==1:
-			i = text.find(words[self.word], self.char)-1
-			self.char = i if i>-1 else self.char
-
-		elif d == -1:
-			i = text.rfind(words[self.word], 0, self.char)-1
-			self.char = i if i>-1 else self.char
 
 	@scriptHandler.script(
 		description=_("剪贴板上一个词句"), 
