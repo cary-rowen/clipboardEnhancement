@@ -2,7 +2,7 @@ import api
 import wx
 import os
 import re
-from . import ReReplace
+from . import reReplace
 class MyFrame(wx.Frame):
 	def __init__(self, *args, **kw):
 		wx.Frame.__init__(self, *args, size=(600,460), **kw)

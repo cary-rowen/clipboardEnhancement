@@ -10,7 +10,7 @@ from keyboardHandler import KeyboardInputGesture
 from tones import beep
 from logHandler import log
 from time import sleep
-
+from .calendar import *
 from .utility import *
 from .clipEditor import MyFrame
 
