@@ -4,7 +4,6 @@ from ui import message
 from os.path import basename, join, dirname, isfile, getsize
 import re
 import webbrowser
-from datetime import datetime as dt
 from json import loads
 from threading import Thread
 from ctypes import windll, WINFUNCTYPE, c_int, c_void_p, c_buffer, sizeof, wstring_at
@@ -43,7 +42,6 @@ def charPToWordP(word_P, char_P):
 			temp_Char=i
 			break
 	return temp_Char
-
 
 def isAlpha(text):
 	for c in text:

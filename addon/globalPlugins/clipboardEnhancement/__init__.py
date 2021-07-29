@@ -12,6 +12,7 @@ from logHandler import log
 from time import sleep
 from .calendar import *
 from .utility import *
+from . import constants
 from .clipEditor import MyFrame
 
 # compatibility with nvda 2021.1.
@@ -23,32 +24,6 @@ except ImportError:
 
 class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 	scriptCategory = "剪贴板增强"
-	formatConfig = {
-	"detectFormatAfterCursor": True,
-	"reportFontName": False,
-	"reportFontSize": False,
-	"reportFontAttributes": False,
-	"reportColor": False,
-	"reportRevisions": False,
-	"reportEmphasis": False,
-	"reportStyle": False,
-	"reportAlignment": False,
-	"reportSpellingErrors": False,
-	"reportGrammarErrors": False,
-	"reportPage": True,
-	"reportLineNumber": True,
-	"reportParagraphIndentation": False,
-	"reportTables": False,
-	"reportLinks": False,
-	"reportHeadings": False,
-	"reportLists": False,
-	"reportBlockQuotes": False,
-	"reportComments": False,
-	"reportLineSpacing": False,
-	'reportHighlight': False,
-	"reportBorderStyle": False,
-	'reportSuperscriptsAndSubscripts': False,
-}
 	pt = pti = {}
 
 	def __init__(self):
@@ -518,12 +493,12 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			pos._rangeObj.End = 387419741
 			pos._rangeObj.Start = pos._rangeObj.End - 1
 		formatField = textInfos.FormatField()
-		for field in pos.getTextWithFields(self.formatConfig):
+		for field in pos.getTextWithFields(constants.formatConfig):
 			if isinstance(field, textInfos.FieldCommand) and isinstance(field.field, textInfos.FormatField):
 				formatField.update(field.field)
 		repeats = scriptHandler.getLastScriptRepeatCount()
 		if repeats == 0:
-			text = speech.getFormatFieldSpeech(formatField, formatConfig=self.formatConfig) if formatField else None
+			text = speech.getFormatFieldSpeech(formatField, formatConfig=constants.formatConfig) if formatField else None
 			if text:
 				text = "".join(text)
 				if text.find(u"页") >= 0:
@@ -552,17 +527,18 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		column = len(pos.clipboardText)
 		pos.expand(textInfos.UNIT_LINE)
 		formatField = textInfos.FormatField()
-		for field in pos.getTextWithFields(self.formatConfig):
+		for field in pos.getTextWithFields(constants.formatConfig):
 			if isinstance(field, textInfos.FieldCommand) and isinstance(field.field, textInfos.FormatField):
 				formatField.update(field.field)
 		repeats = scriptHandler.getLastScriptRepeatCount()
 		if repeats == 0:
-			text = speech.getFormatFieldSpeech(formatField, formatConfig=self.formatConfig) if formatField else None
+			text = speech.getFormatFieldSpeech(formatField, formatConfig=constants.formatConfig) if formatField else None
 			if text:
-				text = "".join(text)
-				if text.find(u"页") >= 0:
-					text = text[1:len(text)]
-				ui.message(u"" + text.replace(u" ", u"").replace(u"行", u"") + u"航" + str(column) + u"列")
+				text = "， ".join(text)
+#				if text.find(u"页") > 0:
+#					text = text[1:len(text)]
+#				ui.message(u"" + text.replace(u" ", u"").replace(u"行", u"") + u"航" + str(column) + u"列")
+				ui.message("{}，列{}".format(text, column))
 			else:
 				ui.message("此处不支持")
 
