@@ -43,12 +43,6 @@ def charPToWordP(word_P, char_P):
 			break
 	return temp_Char
 
-def isAlpha(text):
-	for c in text:
-		o = ord(c)
-		if not (97<=o<=122): return False
-	return True
-
 def loadJson():
 	with open(join(dirname(__file__), 'Dict.json')) as f:
 		Dict_Json = loads(f.read())

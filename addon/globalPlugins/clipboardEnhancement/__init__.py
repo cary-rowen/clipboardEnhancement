@@ -38,7 +38,6 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		self.info = ""
 		self.lines = ["无数据",]
 		self.line = self.char = self.word =-1
-#		self.SpokenPreWordPos = -1 #self.preWordPos = 0
 		self.monitor = None
 		self.editor = None
 		callLater(100, self.clipboard)
@@ -147,7 +146,6 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		if self.flg ==1: # 捕获最后依次的朗读
 			self.spoken = data
 			self.spoken_word = self.spoken_char = -1
-#			self.SpokenPreWordPos = -1
 		elif self.flg == 2: # 捕获缓冲区中的朗读
 			self.spoken2 = data
 			self.flg = 1
@@ -227,7 +225,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		ui.message(word)
 
 		# 解释当前单词
-		if d == 0 and isAlpha(word):
+		if d == 0:
 			word = translateWord(self.Dict, word)
 			if word:
 				self.flg = 2
@@ -382,7 +380,6 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 				text = self.lines[self.line]
 				words = segmentWord(text)[0]
 				self.word = 0
-#				self.char = text.find(words[self.word])-1
 				f = True
 			else: # 如果是最后一行，定位到最后一个单词
 				self.word = l -1
@@ -396,7 +393,6 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 				text = self.lines[self.line]
 				words = segmentWord(text)[0]
 				self.word = len(words)-1
-#				self.char = text.rfind(words[self.word])-1
 				f = True
 # 如果是第一行，定位到第一个单词
 			else:
@@ -411,7 +407,8 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		ui.message(word)
 
 		word = word.lower()
-		if d == 0 and isAlpha(word):
+
+		if d == 0:
 			word = translateWord(self.Dict, word)
 			if word: ui.message(word)
 		if f: return
@@ -525,9 +522,6 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			text = speech.getFormatFieldSpeech(formatField, formatConfig=constants.formatConfig) if formatField else None
 			if text:
 				text = "， ".join(text)
-#				if text.find(u"页") > 0:
-#					text = text[1:len(text)]
-#				ui.message(u"" + text.replace(u" ", u"").replace(u"行", u"") + u"航" + str(column) + u"列")
 				ui.message("{}，列{}".format(text, column))
 			else:
 				ui.message("此处不支持")
@@ -546,7 +540,6 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		id = api.getFocusObject().windowThreadID
 		pos = api.getReviewPosition().copy()
 		try:
-			# if not self.pt.has_key(id):
 			if not id in self.pt.keys():
 				pos.move(textInfos.UNIT_CHARACTER, -381419741, endPoint="start")
 			else:
