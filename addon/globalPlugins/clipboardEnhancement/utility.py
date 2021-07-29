@@ -368,7 +368,7 @@ def jq2(yy, mm, dd):
 			i2 += 24
 		if (yy2 + 2000) * 100 + i2 in e.keys():
 			d2 += e[(yy2 + 2000) * 100 + i2]
-		return md(yy + 2000, mm, d) + jqn[i] + md(yy2 + 2000, mm2, d2) + jqn[i2]
+		return md(yy + 2000, mm, d +1) + jqn[i] + md(yy2 + 2000, mm2, d2 +1) + jqn[i2]
 	else:
 		if i % 2 == 1:
 			i2 = i - 1
@@ -388,7 +388,7 @@ def jq2(yy, mm, dd):
 			i2 += 24
 		if (yy2 + 2000) * 100 + i2 in e.keys():
 			d2 += e[(yy2 + 2000) * 100 + i2]
-		return md(yy2 + 2000, mm2, d2) + jqn[i2] + md(yy + 2000, mm, d) + jqn[i]
+		return md(yy2 + 2000, mm2, d2 +1) + jqn[i2] + md(yy + 2000, mm, d +1) + jqn[i]
 
 def getLunar():
 	d = dt.today()

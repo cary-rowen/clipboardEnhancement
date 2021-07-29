@@ -27,7 +27,7 @@ addon_info = {
 	# version
 	"addon_version": "2.0Dev",
 	# Author(s)
-	"addon_author": "大可 <chuanqi.z@qq.com>; Eureka <manchen_0528@outlook.com>",
+	"addon_author": "大可 <chuanqi.z@qq.com>; Cary-rowen <manchen_0528@outlook.com>",
 	# URL for the add-on documentation support
 	"addon_url": None,
 	# Documentation file name
