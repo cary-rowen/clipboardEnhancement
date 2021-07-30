@@ -127,7 +127,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		if self.line >= len(self.lines):
 			self.line = len(self.lines) - 1
 			beep(9800, 5)
-		if self.files: beep(6500, 10)
+		if self.files: beep(6500, 10, 30, 30)
 		ui.message(self.lines[self.line])
 		self.word = self.char = -1
 
@@ -440,7 +440,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		speech.speak(text)
 
 	@scriptHandler.script(
-		description=_("打开URL"), 
+		description=_("打开剪贴板内（或刚听到的）网址"), 
 		gestures=["kb(desktop):control+numpadEnter", "kb(laptop):NVDA+Alt+Enter"])
 	def script_openURL(self, gesture):
 		if not (tryOpenURL(self.spoken) or tryOpenURL(self.text)):
