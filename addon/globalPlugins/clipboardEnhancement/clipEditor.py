@@ -53,7 +53,7 @@ class MyFrame(wx.Frame):
 			api.copyToClip(text)
 
 	def OnRe(self, evt):
-		dlg = ReReplace.ReDialog(self)
+		dlg = reReplace.ReDialog(self)
 		if dlg.ShowModal() == wx.ID_OK:
 			pattern = dlg.cb.GetValue()
 			aim = dlg.cb2.GetValue()
