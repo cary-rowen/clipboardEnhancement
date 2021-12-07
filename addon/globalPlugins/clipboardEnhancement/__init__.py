@@ -286,7 +286,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		speech.speakSpelling(self.spoken[self.spoken_char])
 
 	@scriptHandler.script(
-		description=_("刚听到内容的当前字（双击解释）"), 
+		description=_("刚听到内容的当前字（连按两次解释）"), 
 		gestures=["kb(desktop):Control+Windows+numpad2", "kb(laptop):NVDA+windows+."])
 	def script_currentSpokenChar(self, gesture):
 		if not self.spoken: return
@@ -295,7 +295,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		self._charExplanation(self.spoken[self.spoken_char])
 
 	@scriptHandler.script(
-		description=_("剪贴板当前字（双击解释）"), 
+		description=_("剪贴板当前字（连按两次解释）"), 
 		gestures=["kb(desktop):Control+Numpad2", "kb(laptop):NVDA+Alt+."])
 	def script_currentChar(self, gesture):
 		if self.line < 0: self.line = 0
@@ -447,7 +447,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			ui.message("未找到可供打开的 URL")
 
 	@scriptHandler.script(
-	description=_("读出时间，双击读日期"),
+	description=_("读出时间（连按两次读出日期）"),
 	gesture="kb:NVDA+f12")
 	def script_speakDateTime(self, gesture):
 		if scriptHandler.getLastScriptRepeatCount() > 0:
@@ -456,7 +456,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			ui.message(getTime())
 
 	@scriptHandler.script(
-		description=_("朗读农历时间"), 
+		description=_("读出农历日期（连按两次读出本月节气）"), 
 		gesture="kb:NVDA+f11")
 	def script_speakLunarDate(self, gesture):
 		if scriptHandler.getLastScriptRepeatCount() > 0:
@@ -616,7 +616,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		super().terminate()
 
 	@scriptHandler.script(
-		description=_("粘贴刚听到的内容"), 
+		description=_("粘贴刚听到的内容"),
 		gestures=["kb:NVDA+`"])
 	def script_pasteLastSpoken(self, gesture):
 		self.monitor.work = False
