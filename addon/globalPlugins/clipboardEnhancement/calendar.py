@@ -56,7 +56,7 @@ def jq(yy, mm, dd):
 	if i < 0:
 		i += 24
 	if (yy + 2000) * 100 + i in constants.E.keys():
-		d += e[(yy + 2000) * 100 + i]
+		d += constants.E[(yy + 2000) * 100 + i]
 	if d == dd:
 		return u" 今日" + constants.JQN[i]
 	elif d == dd - 1:
@@ -75,7 +75,7 @@ def jq2(yy, mm, dd):
 	if i < 0:
 		i += 24
 	if (yy + 2000) * 100 + i in constants.E.keys():
-		d += e[(yy + 2000) * 100 + i]
+		d += constants.E[(yy + 2000) * 100 + i]
 	if d <= dd:
 		if i % 2 == 0:
 			i2 = i + 1
@@ -94,7 +94,7 @@ def jq2(yy, mm, dd):
 		if i2 < 0:
 			i2 += 24
 		if (yy2 + 2000) * 100 + i2 in constants.E.keys():
-			d2 += e[(yy2 + 2000) * 100 + i2]
+			d2 += constants.E[(yy2 + 2000) * 100 + i2]
 		return md(yy + 2000, mm, d+1) + constants.JQN[i] + md(yy2 + 2000, mm2, d2+1) + constants.JQN[i2]
 	else:
 		if i % 2 == 1:
@@ -114,7 +114,7 @@ def jq2(yy, mm, dd):
 		if i2 < 0:
 			i2 += 24
 		if (yy2 + 2000) * 100 + i2 in constants.E.keys():
-			d2 += e[(yy2 + 2000) * 100 + i2]
+			d2 += constants.e[(yy2 + 2000) * 100 + i2]
 		return md(yy2 + 2000, mm2, d2+1) + constants.JQN[i2] + md(yy + 2000, mm, d+1) + constants.JQN[i]
 
 def getLunar():
