@@ -1,130 +1,174 @@
-from datetime import datetime as dt
-from . import constants
+import time
+from . import sxtwl
+from .constants import *
 
 def getTime():
-	d = dt.today()
-	return '{}点{}分{}秒'.format(d.hour, d.minute, d.second)
+	d = time.localtime()
+	return f'{d.tm_hour}点{d.tm_min}分{d.tm_sec}秒'
 
-def getDate(d=None):
-	if d is None:
-		d = dt.today()
-	w = ''.join(('星期', constants.WEEK[int(d.strftime('%w'))]))
-	wth = ''.join(('第', d.strftime('%W'), '周'))
-	return '{}年{}月{}日， {}， {}'.format(d.year, d.month, d.day, w, wth)
+def getDate():
+	d = time.localtime()
+	return f'{d.tm_year}年{d.tm_mon}月{d.tm_mday}日,星期{WeekCn[d.tm_wday]}, 第{d.tm_yday}天'
 
-def ymd(yy, dd):
-	di = constants.DS[yy - 1900]
-	for i in range(10, 23):
-		dm = 30 if di & pow(2, i) > 0 else 29
-		if dd >= dm:
-			dd -= dm
-		else:
-			i -= 10
-			rm = (di & 960) / 64
-			s = u""
-			if rm > 0:
-				if rm < i:
-					i -= 1
-				elif rm == i:
-					i -= 1
-					s += u"闰"
-			return s + constants.MN[i] + u"月" + constants.DN[int(dd)]
-
-def md(yy, mm, dd, ys=False):
-	if yy % 4 == 0 and (yy % 100 != 0 or yy % 400 == 0):
-		dd += constants.M2[mm]
+def get_jieqi_time(day):
+	# 当日是否有节气
+	if day.hasJieQi():
+		#获取节气的儒略日数
+		jd = day.getJieQiJD()
+		# 将儒略日数转换成年月日时秒
+		t = sxtwl.JD2DD(jd )
+		# 注意，t.s是小数，需要四舍五入
+		tt = "时刻:%d:%d:%d"%(t.h, t.m, round(t.s))
+		return f'今日{jqmc[day.getJieQi()]}, {tt}'
 	else:
-		dd += constants.M1[mm]
-	sp = constants.DS[yy - 1900] & 63
-	s = (((u"" + constants.CY1[(yy - 184) % 10] + constants.CY2[(yy - 184) % 12]) if dd >= sp else (
-			u"" + constants.CY1[(yy - 185) % 10] + constants.CY2[(yy - 185) % 12])) + u"年") if ys else u""
-	if dd >= sp:
-		return s + ymd(yy, dd - sp)
-	else:
-		yy2 = yy - 1
-		sp = constants.DS[yy2 - 1900] & 63
-		dd += constants.M2[12] if yy2 % 4 == 0 and (yy2 % 100 != 0 or yy2 % 400 == 0) else constants.M1[12]
-		return s + ymd(yy2, dd - sp)
+		for i in range(2,32):
+			day = day.before(1)
+			if day.hasJieQi():
+				jq = jqmc[day.getJieQi()]
+				return f'{jq}第{i}天'
 
-def jq(yy, mm, dd):
-	if yy <= 2000:
-		return u""
-	yy -= 2000
-	i = mm * 2 + (-2 if dd <= 15 else -1)
-	r = yy / 4 if i > 1 else (yy - 1) / 4
-	d = int(yy * 0.2422 + constants.C[i]) - r - 1
-	if i < 0:
-		i += 24
-	if (yy + 2000) * 100 + i in constants.E.keys():
-		d += constants.E[(yy + 2000) * 100 + i]
-	if d == dd:
-		return u" 今日" + constants.JQN[i]
-	elif d == dd - 1:
-		return u" 昨日" + constants.JQN[i]
-	elif d == dd + 1:
-		return u" 明日" + constants.JQN[i]
-	return u""
+def get_lunar_month_days(day):
+	# 一个农历月的天数
+	year = day.getLunarYear(False)
+	month = day.getLunarMonth()
+	isRun = True if day.isLunarLeap() else False
+	daynum = sxtwl.getLunarMonthNum(year, month, isRun)
+	r = '小' if daynum < 30 else '大'
+	return '%s%s月%s' % ("闰" if isRun else "", Ymc[day.getLunarMonth()], r)
 
-def jq2(yy, mm, dd):
-	if yy <= 2000:
-		return u""
-	yy -= 2000
-	i = mm * 2 + (-2 if dd <= 15 else -1)
-	r = yy / 4 if i > 1 else (yy - 1) / 4
-	d = int(yy * 0.2422 + constants.C[i]) - r - 1
-	if i < 0:
-		i += 24
-	if (yy + 2000) * 100 + i in constants.E.keys():
-		d += constants.E[(yy + 2000) * 100 + i]
-	if d <= dd:
-		if i % 2 == 0:
-			i2 = i + 1
-			yy2 = yy
-			mm2 = mm
-		elif i == 21:
-			i2 = 22
-			yy2 = yy + 1
-			mm2 = 0
-		else:
-			i2 = i + 1 if i < 23 else 0
-			yy2 = yy
-			mm2 = mm + 1
-		r2 = yy2 / 4 if 1 < i2 < 22 else (yy2 - 1) / 4
-		d2 = int(yy2 * 0.2422 + constants.C[i2]) - r2 - 1
-		if i2 < 0:
-			i2 += 24
-		if (yy2 + 2000) * 100 + i2 in constants.E.keys():
-			d2 += constants.E[(yy2 + 2000) * 100 + i2]
-		return md(yy + 2000, mm, d+1) + constants.JQN[i] + md(yy2 + 2000, mm2, d2+1) + constants.JQN[i2]
-	else:
-		if i % 2 == 1:
-			i2 = i - 1
-			yy2 = yy
-			mm2 = mm
-		elif i == 22:
-			i2 = 21
-			yy2 = yy - 1
-			mm2 = 11
-		else:
-			i2 = i - 1 if i > 0 else 23
-			yy2 = yy
-			mm2 = mm - 1
-		r2 = yy2 / 4 if i2 > 1 and i2 < 22 else (yy2 - 1) / 4
-		d2 = int(yy2 * 0.2422 + constants.C[i2]) - r2 - 1
-		if i2 < 0:
-			i2 += 24
-		if (yy2 + 2000) * 100 + i2 in constants.E.keys():
-			d2 += constants.e[(yy2 + 2000) * 100 + i2]
-		return md(yy2 + 2000, mm2, d2+1) + constants.JQN[i2] + md(yy + 2000, mm, d+1) + constants.JQN[i]
 
-def getLunar():
-	d = dt.today()
-	yy, mm, dd = d.year, d.month, d.day
-	if yy < 1900 or yy > 2100:
-		return u""
-	return md(yy, mm - 1, dd - 1, True) + jq(yy, mm-1 , dd-1)
+def get_lunar_date(day):
+	# 以立春为界的农历
+	s = "%s%s月%s" % (#day.getLunarYear(False), 
+		'闰' if day.isLunarLeap() else '', Ymc[day.getLunarMonth()], rmc[day.getLunarDay()-1])
+#		s = s + '\n今日 %s  %s' % (jqmc[day.getJieQi()], tt)
+	return s
 
-def getJq():
-	d = dt.today()
-	return jq2(d.year, d.month-1, d.day-1)
+def get_gz(day, tm):
+	# 以立春为界的天干地支 （注，如果没有传参，或者传false，是以立春为界的。刚好和getLunarYear相反）
+	yTG = day.getYearGZ()
+	# 年干支
+	ygz = Gan[yTG.tg] + Zhi[yTG.dz]
+	shx = "生肖:" + ShX[yTG.dz]
+	#月干支
+	mTG = day.getMonthGZ()
+	mgz = Gan[mTG.tg] + Zhi[mTG.dz]
+	#日干支
+	dTG  = day.getDayGZ()
+	dgz = Gan[dTG.tg] + Zhi[dTG.dz]
+	#时干支,传24小时制的时间，分早晚子时
+	hour = tm.tm_hour
+	sTG = day.getHourGZ(hour)
+	sgz = Gan[sTG.tg] + Zhi[sTG.dz]
+	return f'{ygz}年,{mgz}月,{dgz}日,{sgz}时。\n{shx}'
 
+def get_jieqi_before(day):
+	while True:
+		day = day.before(1)
+		# hasJieQi的接口比getJieQiJD速度要快，你也可以使用getJieQiJD来判断是否有节气。
+		if day.hasJieQi():
+			jq = jqmc[day.getJieQi()]
+			jqDay = '农历' + get_lunar_date(day)
+			return f'{day.getSolarMonth()}月{day.getSolarDay()}日  {jq}, {jqDay}'
+
+def get_jieqi_after(day):
+	while True:
+		day = day.after(1)
+		if day.hasJieQi():
+			jq = jqmc[day.getJieQi()]
+			jqDay = '农历' + get_lunar_date(day)
+			return f'{day.getSolarMonth()}月{day.getSolarDay()}日  {jq}, {jqDay}'
+
+'''
+1.获取某日的前几天或者后几天的信息 （可以用到很多场景中）
+# 获取某天的后面几天
+num = 1    #你喜欢写多少天 也多少天，可以写负数，相当于往前
+day = day.after(num)  #获取num天后的日信息
+s = "公历:%d年%d月%d日" % (day.getSolarYear(), day.getSolarMonth(), day.getSolarDay())
+print(s)
+# 同上
+day = day.before(num)
+s = "公历:%d年%d月%d日" % (day.getSolarYear(), day.getSolarMonth(), day.getSolarDay())
+print(s)
+1.获取一年中的闰月
+# 获取一年中的闰月
+year = 2020
+month = sxtwl.getRunMonth(year)
+if month >= 0:
+    print("%d年的闰月是%d"%(year, month) )
+else:
+    print("没有闰月")
+1.获取一个农历月的天数
+# 一个农历月的天数
+year = 2020 #农历年
+month  = 4 #农历月
+isRun = False #是否是闰月
+daynum = sxtwl.getLunarMonthNum(year, month, isRun)
+print("农历%d年%s%d月的天数:"%(year, '闰'if isRun else '', month), daynum)
+1.儒略日数与公历的互转
+#儒略日数转公历
+jd = sxtwl.J2000
+t = sxtwl.JD2DD(jd )
+#公历转儒略日
+jd = sxtwl.toJD(t)
+1.查找某日之前或者之后的节气
+# 查找某日前后的节气,此例为之后，之前把after替换成before
+while True:
+    # 这里可以使用after或者before，不用担心速度，这里的计算在底层仅仅是+1这么简单
+    day = day.after(1)
+    # hasJieQi的接口比getJieQiJD速度要快，你也可以使用getJieQiJD来判断是否有节气。
+    if day.hasJieQi():
+        print('节气：%s'% jqmc[day.getJieQi()])
+        #获取节气的儒略日数， 如果说你要计算什么时间的相距多少，直接比对儒略日要方便，相信我。
+        jd = day.getJieQiJD()
+        # 将儒略日数转换成年月日时秒
+        t = sxtwl.JD2DD(jd )
+        # 注意，t.s是小数，需要四舍五入
+        print("节气时间:%d-%d-%d %d:%d:%d"%(t.Y, t.M, t.D, t.h, t.m, round(t.s)))
+        break
+1.四柱反查 (好像还有bug，待修复)
+# 四柱反查工具方法
+# 实际项目中不要这样子搞哈，因为汉字utf-8，GBK2312不同的编码。建议还是直接使用天干地支的数字索引 
+def getGZ(gzStr):
+    tg = -1
+    dz = -1
+    for i, v in enumerate(Gan):
+        if gzStr[0]  == v:
+            tg = i
+            break
+    for i, v in enumerate(Zhi):
+        if  gzStr[1] == v:
+            dz = i
+            break   
+    return sxtwl.GZ(tg, dz)
+# 四注反查 分别传的是年天干，月天干，日天干，时天干， 开始查询年，结束查询年  返回满足条件的儒略日数
+jds = sxtwl.siZhu2Year(getGZ('辛丑'), getGZ('己亥'), getGZ('丙寅'), getGZ('癸巳'), 2003, 2029);
+for jd in jds:
+    t = sxtwl.JD2DD(jd )
+    print("符合条件的时间:%d-%d-%d %d:%d:%d"%(t.Y, t.M, t.D, t.h, t.m, round(t.s)))
+'''
+
+def makeDay():
+	tm = time.localtime() #返回的是命名元组
+	# 从公历年月日获取一天的信息
+	day = sxtwl.fromSolar(tm.tm_year, tm.tm_mon, tm.tm_mday)
+	# 从农历年月日获取一天的信息
+	# day = sxtwl.fromLunar(2020, 12, 1)
+	return day, tm
+
+def getLunarDate():
+	day, tm = makeDay()
+	return '。\n'.join((get_lunar_date(day),
+		get_lunar_month_days(day),
+		get_gz(day, tm)))
+
+def getJieQi():
+	day, tm = makeDay()
+	return '。\n'.join((get_jieqi_time(day),
+		get_jieqi_before(day),
+		get_jieqi_after(day)))
+
+def get_constellation():
+	# 星座(有bug?待修复)
+	day,tm = makeDay()
+	return XiZ[day.getConstellation()]+'座'

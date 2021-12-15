@@ -451,7 +451,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 	gesture="kb:NVDA+f12")
 	def script_speakDateTime(self, gesture):
 		if scriptHandler.getLastScriptRepeatCount() > 0:
-			ui.message(getDate())
+			ui.message(getDate()+'。\n'+get_constellation())
 		else:
 			ui.message(getTime())
 
@@ -460,9 +460,9 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		gesture="kb:NVDA+f11")
 	def script_speakLunarDate(self, gesture):
 		if scriptHandler.getLastScriptRepeatCount() > 0:
-			ui.message(getJq())
+			ui.message(getJieQi())
 		else:
-			ui.message(getLunar())
+			ui.message(getLunarDate())
 
 	@scriptHandler.script(
 		description=_("编辑文档的字数统计"), 
