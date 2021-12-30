@@ -10,7 +10,7 @@ from ctypes import windll, WINFUNCTYPE, c_int, c_void_p, c_buffer, sizeof, wstri
 import ctypes.wintypes as w
 import sys
 from os import walk
-from winsound import PlaySound, SND_FILENAME, SND_ASYNC
+from nvwave import playWaveFile
 from time import sleep
 
 def fileLists(files):
@@ -114,7 +114,7 @@ class ClipboardMonitor:
 			self.work = False
 			Thread(target=ClipboardMonitor.workReset, args=(self,)).start()
 			Thread(target=ClipboardMonitor.get_clipboard_data, args=(self,)).start()
-			PlaySound(self.SOUND, SND_FILENAME|SND_ASYNC)
+			playWaveFile(self.SOUND)
 		return windll.user32.CallWindowProcA(self.__pre_handle, hwnd, msg, wParam, lParam)
 
 	def StartMonitor(self):
