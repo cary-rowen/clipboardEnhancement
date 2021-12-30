@@ -8,7 +8,7 @@ class MyFrame(wx.Frame):
 		wx.Frame.__init__(self, *args, size=(600,460), **kw)
 		self.isExit = False
 		pnl = wx.Panel(self)
-		self.edit = wx.TextCtrl(pnl, pos=(0, 0), style=wx.TE_PROCESS_TAB|wx.TE_MULTILINE|wx.TE_RICH2)
+		self.edit = wx.TextCtrl(pnl, pos=(0, 0), style=wx.TE_PROCESS_TAB|wx.TE_MULTILINE|wx.TE_RICH2|wx.HSCROLL)
 		menubar = wx.MenuBar()
 		menu = wx.Menu()
 		menu.Append(wx.ID_OPEN, '打开(&O)\tCtrl+O', '更新剪贴板数据')
@@ -43,7 +43,14 @@ class MyFrame(wx.Frame):
 		code = evt.GetKeyCode()
 		if code == wx.WXK_ESCAPE:
 			self.Show(False)
+			p = self.edit.GetInsertionPoint()
+			xy = self.edit.PositionToXY(p)
+			if xy[0]:
+				self.setClipboardPosition(xy[1], xy[2])
 		evt.Skip()
+
+	def setClipboardPosition(self, x, y):
+		pass
 
 	def OnUpdate(self, evt):
 		text = self.edit.GetValue()
@@ -194,11 +201,11 @@ class MyFrame(wx.Frame):
 
 	def OnSave(self, event):
 		text = self.edit.GetValue()
-		if not text:
-			self.clearClipboard()
-		else:
+		if text:
 			api.copyToClip(text)
-		self.Destroy()
+		else:
+			self.clearClipboard()
+		self.Show(False)
 
 	def saveFile(self, filename, text):
 		wildcard = '文本文件 (*.txt)|*.txt|' \

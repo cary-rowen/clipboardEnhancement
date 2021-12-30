@@ -50,6 +50,10 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		self.monitor.customization = self.func
 		callLater(100, self.monitor.get_clipboard_data)
 		self.monitor.StartMonitor()
+		self.editor.setClipboardPosition = self.setPosition
+
+	def setPosition(self, char, line):
+		self.char, self.line = char, line
 
 	def loadFiles(self):
 		self.Dict = loadJson()
@@ -203,6 +207,9 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		if self.editor is None:
 			self.editor = MyFrame(gui.mainFrame, title="剪贴板编辑器")
 		self.editor.edit.SetValue(self.text.replace("\r\n", "\n"))
+		point = self.editor.edit.XYToPosition(self.char if self.char>=0 else 0,
+		self.line if self.line>=0 else 0)
+		self.editor.edit.SetInsertionPoint(point)
 		self.editor.Show(True)
 		self.editor.Maximize(True)
 		self.editor.Raise()
