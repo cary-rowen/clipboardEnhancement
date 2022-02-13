@@ -4,7 +4,7 @@ from ui import message
 from os.path import basename, join, dirname, isfile, getsize
 import re
 import webbrowser
-from json import loads
+from pickle import load
 from threading import Thread
 from ctypes import windll, WINFUNCTYPE, c_int, c_void_p, c_buffer, sizeof, wstring_at
 import ctypes.wintypes as w
@@ -43,10 +43,10 @@ def charPToWordP(word_P, char_P):
 			break
 	return temp_Char
 
-def loadJson():
-	with open(join(dirname(__file__), 'Dict.json')) as f:
-		Dict_Json = loads(f.read())
-	return Dict_Json
+def loadDict():
+	with open(join(dirname(__file__), 'Dict.pickle'), "rb") as fp:
+		dictPickle = load(fp)    
+	return dictPickle
 
 def translateWord(dict, word):
 	result = dict.get(word, dict.get(re.sub('(ing|ed|s)$', '', word)))

@@ -56,7 +56,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		self.char, self.line = char, line
 
 	def loadFiles(self):
-		self.Dict = loadJson()
+		self.Dict = loadDict()
 
 	def func(self):
 		self.text = ""
