@@ -564,6 +564,16 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		except:
 			pass
 
+	@scriptHandler.script(
+		description=_("查询选中单词或词组"), 
+		gestures=[])
+	def script_QueryDictionaryWithSelected(self, gesture):
+		selectedText=self.getSelectionText()
+		if not selectedText:
+			ui.message("请选中要查询的单词或词组")
+			return
+		result = translateWord(self.Dict, selectedText.strip().lower())
+		ui.message(result)
 
 	@scriptHandler.script(
 		description=_("追加已选文字到剪贴板"), 
@@ -577,12 +587,33 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		repeatCount =scriptHandler.getLastScriptRepeatCount()
 		if repeatCount:
 			return
-
 		ClipboardText = ""
-		SelectedText = ""
 		ResultText = ""
-		info = ""
+		selectedText=self.getSelectionText()
 
+		if not selectedText:
+			ui.message("未选择文本")
+			return
+
+		# 获取剪贴板文本
+		try:
+			ClipboardText = api.getClipData()
+		except:
+			api.copyToClip(selectedText)
+			ui.message("拷贝")
+			return
+
+		# 拼接要复制的文本
+		ResultText = ClipboardText + "\n" + selectedText
+		try:
+			api.copyToClip(ResultText)
+			ui.message("已追加")
+		except:
+			ui.message("追加失败")
+
+
+	def getSelectionText(self):
+		info = ""
 		obj=api.getFocusObject()
 		treeInterceptor=obj.treeInterceptor
 		if hasattr(treeInterceptor,'TextInfo') and not treeInterceptor.passThrough:
@@ -592,26 +623,9 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		except (RuntimeError, NotImplementedError):
 			info=None
 		if not info or info.isCollapsed:
-			ui.message("未选择文本")
-			return
+			return None
 		else:
-			SelectedText = info.text
-
-		# 获取剪贴板文本
-		try:
-			ClipboardText = api.getClipData()
-		except:
-			api.copyToClip(SelectedText)
-			ui.message("拷贝")
-			return
-
-		# 拼接要复制的文本
-		ResultText = ClipboardText + "\n" + SelectedText
-		try:
-			api.copyToClip(ResultText)
-			ui.message("已追加")
-		except:
-			ui.message("追加失败")
+			return info.text
 
 
 	def terminate(self):
