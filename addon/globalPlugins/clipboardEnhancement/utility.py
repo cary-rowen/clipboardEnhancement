@@ -210,8 +210,8 @@ class ClipboardMonitor:
 			if s<1024: return str(round(s, 2))+i
 		return str(round(s, 2))+i
 
-def pasteBack(obj):
-	sleep(0.1)
+def paste(obj):
+	sleep(0.5)
 	j = 0
 	while j <10:
 		try:
@@ -223,3 +223,11 @@ def pasteBack(obj):
 			j += 1
 			sleep(0.05)
 	windll.user32.PostMessageW(obj.editor.GetHandle(), PASTED, 0, 0)
+
+def isUseUIAForWord():
+	import config
+	obj=api.getFocusObject()
+	if obj.appModule.appName=="winword" and config.conf["UIA"]["useInMSWordWhenAvailable"]:
+		return True
+	else:
+		return False

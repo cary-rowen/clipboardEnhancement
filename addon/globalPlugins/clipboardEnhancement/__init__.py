@@ -8,7 +8,6 @@ import textInfos
 from core import callLater
 from keyboardHandler import KeyboardInputGesture
 from tones import beep
-from logHandler import log
 from time import sleep
 from .calendar import *
 from .utility import *
@@ -475,8 +474,10 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		description=_("编辑文档的字数统计"), 
 		gestures=["kb(desktop):windows+numpaddelete", "kb(laptop):NVDA+alt+="])
 	def script_editInfo(self, gesture):
+		if isUseUIAForWord():
+			ui.message("请使用‘朗读状态栏’功能获取该信息。")
+			return
 		pos = api.getReviewPosition().copy()
-		log.info(pos)
 		if not ('_startOffset' in dir(pos) or '_rangeObj' in dir(pos)):
 			ui.message("未获取到相关信息")
 			return
@@ -512,6 +513,9 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		description=_("编辑文档的当前光标位置"), 
 		gestures=["kb(desktop):windows+NumPad5", "kb(laptop):NVDA+alt+\\"])
 	def script_editCurrent(self, gesture):
+		if isUseUIAForWord():
+			ui.message("请使用‘朗读状态栏’功能获取该信息。")
+			return
 		pos = api.getReviewPosition().copy()
 		if not '_startOffset' in dir(pos) and not '_rangeObj' in dir(pos):
 			ui.message(u"无法获取位置")
@@ -646,4 +650,4 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		self.monitor.work = False
 		api.copyToClip(self.spoken.rstrip("\r\n"))
 		KeyboardInputGesture.fromName("control+v").send()
-		Thread(target = pasteBack, args=(self,)).start()
+		Thread(target = paste, args=(self,)).start()
