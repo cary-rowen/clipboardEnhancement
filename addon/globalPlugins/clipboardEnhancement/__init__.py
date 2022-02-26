@@ -630,10 +630,13 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 
 	def terminate(self):
 		self.monitor.Stop()
+		self.monitor = None
 		speech.speak = self.oldSpeak
+		self.oldSpeak = None
 		if self.editor:
 			self.editor.isExit = True
 			self.editor.Destroy()
+		self.editor = None
 		super().terminate()
 
 	@scriptHandler.script(

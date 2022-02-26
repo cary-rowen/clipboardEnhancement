@@ -94,7 +94,7 @@ class ClipboardMonitor:
 		self.handle = handle
 		self.__pre_handle = 0
 		self.work = True
-		self.__mhf = WINFUNCTYPE(c_int, c_int, c_int, c_int, c_int)(self.MsgHandleFunc)
+		self.__mhf = None
 		self.data = None
 
 	def customization(self):
@@ -118,15 +118,19 @@ class ClipboardMonitor:
 		return windll.user32.CallWindowProcA(self.__pre_handle, hwnd, msg, wParam, lParam)
 
 	def StartMonitor(self):
+		self.__mhf = WINFUNCTYPE(c_int, c_int, c_int, c_int, c_int)(self.MsgHandleFunc)
 		u32.AddClipboardFormatListener(self.handle)
 		self.__pre_handle = windll.user32.SetWindowLongA(self.handle, -4, self.__mhf)
 
 	def Stop(self):
 		u32.RemoveClipboardFormatListener(self.handle)
 		self.__pre_handle = windll.user32.SetWindowLongA(self.handle, -4, 0)
+		self.__mhf = None
 
 	def get_clipboard_data(self):
-		if not OpenClipboard(self.handle): return
+		if not OpenClipboard(None):
+			CloseClipboard()
+			OpenClipboard(None)
 		formats = []
 		n = 0
 		while True:
@@ -152,7 +156,9 @@ class ClipboardMonitor:
 
 	def get_clip_text(self):
 		text = ""
-		if not OpenClipboard(self.handle): return None
+		if not OpenClipboard(None):
+			CloseClipboard()
+			OpenClipboard(None)
 		h_clip_mem = GetClipboardData(CF_UNICODETEXT)
 		text = wstring_at(GlobalLock(h_clip_mem))
 		GlobalUnlock(h_clip_mem)
@@ -161,7 +167,9 @@ class ClipboardMonitor:
 
 	def get_clip_file_list(self):
 		files = []
-		if not OpenClipboard(self.handle): return None
+		if not OpenClipboard(None):
+			CloseClipboard()
+			OpenClipboard(None)
 		h_hdrop = GetClipboardData(CF_HDROP)
 		if not h_hdrop: return
 		FS_ENCODING = sys.getfilesystemencoding()
