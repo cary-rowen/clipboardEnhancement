@@ -66,7 +66,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		data = self.monitor.getData()
 		if isinstance(data, str):
 			self.text = data
-			self.lines = data.split("\n")
+			self.lines = data.splitlines(True)
 		elif isinstance(data, list):
 			self.files = data
 			self.lines = list(fileLists(data))
@@ -205,7 +205,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 	def script_clipEditor(self, gesture):
 		if self.editor is None:
 			self.editor = MyFrame(gui.mainFrame, title="剪贴板编辑器")
-		self.editor.edit.SetValue(self.text.replace("\r\n", "\n"))
+		self.editor.edit.SetValue(self.text.replace('\r\n','\n'))
 		point = self.editor.edit.XYToPosition(self.char if self.char>=0 else 0,
 		self.line if self.line>=0 else 0)
 		self.editor.edit.SetInsertionPoint(point)
@@ -594,7 +594,6 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		ClipboardText = ""
 		ResultText = ""
 		selectedText=self.getSelectionText()
-
 		if not selectedText:
 			ui.message("未选择文本")
 			return
@@ -608,7 +607,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			return
 
 		# 拼接要复制的文本
-		ResultText = ClipboardText + "\n" + selectedText
+		ResultText = ClipboardText +"\n" +selectedText
 		try:
 			api.copyToClip(ResultText)
 			ui.message("已追加")
