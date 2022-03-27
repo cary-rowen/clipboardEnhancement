@@ -182,7 +182,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 
 	@scriptHandler.script(
 		description=_("追加刚听到的内容到剪贴板"), 
-		gesture="kb:NVDA+D")
+		gesture="kb:NVDA+Alt+D")
 	def script_append(self, gesture):
 		clip ="" # self._getClipText()
 		count = scriptHandler.getLastScriptRepeatCount()

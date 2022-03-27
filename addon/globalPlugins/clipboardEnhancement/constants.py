@@ -25,6 +25,7 @@ formatConfig = {
 	'reportHighlight': False,
 	"reportBorderStyle": False,
 	'reportSuperscriptsAndSubscripts': False,
+	'reportBookmarks': False,
 }
 
 
