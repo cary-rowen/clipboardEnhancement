@@ -3,8 +3,9 @@ import globalPluginHandler
 import scriptHandler
 import ui
 import gui
+import globalVars
 import textInfos
-
+import speech
 from core import callLater
 from keyboardHandler import KeyboardInputGesture
 from tones import beep
@@ -13,14 +14,16 @@ from .calendar import *
 from .utility import *
 from . import constants
 from .clipEditor import MyFrame
+from versionInfo import version_year
+from versionInfo import version_year
+speechModule = speech.speech if version_year>=2021 else speech
 
-# compatibility with nvda 2021.1.
-try:
-	from speech import speech
-except ImportError:
-	import speech
+def disableInSecureMode(decoratedCls):
+	if globalVars.appArgs.secure:
+		return globalPluginHandler.GlobalPlugin
+	return decoratedCls
 
-
+@disableInSecureMode
 class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 	scriptCategory = "剪贴板增强"
 	pt = pti = {}
@@ -30,8 +33,8 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		self.flg = 1
 		self.spoken2 = self.spoken = ""
 		self.spoken_word = self.spoken_char = -1
-		self.oldSpeak = speech.speak
-		speech.speak = self.newSpeak
+		self.oldSpeak = speechModule.speak
+		speechModule.speak = self.newSpeak
 		self.text = ""
 		self.files = []
 		self.info = ""
@@ -272,7 +275,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			self.spoken_char = l-1
 			beep(13500, 4)
 		self.flg = 2
-		speech.speakSpelling(self.spoken[self.spoken_char])
+		speechModule.speakSpelling(self.spoken[self.spoken_char])
 
 
 
@@ -289,7 +292,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			self.spoken_char = 0
 			beep(13500, 4)
 		self.flg = 2
-		speech.speakSpelling(self.spoken[self.spoken_char])
+		speechModule.speakSpelling(self.spoken[self.spoken_char])
 
 	@scriptHandler.script(
 		description=_("刚听到内容的当前字（连按两次解释）"), 
@@ -313,9 +316,9 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 	def _charExplanation(self, c):
 		n = scriptHandler.getLastScriptRepeatCount()
 		if n ==1:
-			speech.speakSpelling(c, useCharacterDescriptions=True)
+			speechModule.speakSpelling(c, useCharacterDescriptions=True)
 		elif n == 0:
-			speech.speakSpelling(c)
+			speechModule.speakSpelling(c)
 
 	@scriptHandler.script(
 		description=_("剪贴板上一个字"), 
@@ -365,7 +368,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		if text:
 			p = segmentWord(text)[1]
 			self.word = charPToWordP(p, self.char)
-			speech.speakSpelling(text[self.char])
+			speechModule.speakSpelling(text[self.char])
 		else:
 			ui.message("空白")
 
@@ -443,7 +446,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 	def script_fromCurrentLine(self, gesture):
 		if self.line < 0: self.line = 0
 		text = self.lines[self.line:]
-		speech.speak(text)
+		speechModule.speak(text)
 
 	@scriptHandler.script(
 		description=_("打开剪贴板内（或刚听到的）网址"), 
@@ -493,7 +496,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 				formatField.update(field.field)
 		repeats = scriptHandler.getLastScriptRepeatCount()
 		if repeats == 0:
-			text = speech.getFormatFieldSpeech(formatField, formatConfig=constants.formatConfig) if formatField else None
+			text = speechModule.getFormatFieldSpeech(formatField, formatConfig=constants.formatConfig) if formatField else None
 			if text:
 				text = "".join(text)
 				if text.find(u"页") >= 0:
@@ -530,7 +533,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 				formatField.update(field.field)
 		repeats = scriptHandler.getLastScriptRepeatCount()
 		if repeats == 0:
-			text = speech.getFormatFieldSpeech(formatField, formatConfig=constants.formatConfig) if formatField else None
+			text = speechModule.getFormatFieldSpeech(formatField, formatConfig=constants.formatConfig) if formatField else None
 			if text:
 				text = "， ".join(text)
 				ui.message("{}，列{}".format(text, column))
@@ -634,7 +637,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 	def terminate(self):
 		self.monitor.Stop()
 		self.monitor = None
-		speech.speak = self.oldSpeak
+		speechModule.speak = self.oldSpeak
 		self.oldSpeak = None
 		if self.editor:
 			self.editor.isExit = True
