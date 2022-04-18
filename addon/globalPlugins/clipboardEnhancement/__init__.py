@@ -15,7 +15,6 @@ from .utility import *
 from . import constants
 from .clipEditor import MyFrame
 from versionInfo import version_year
-from versionInfo import version_year
 speechModule = speech.speech if version_year>=2021 else speech
 
 def disableInSecureMode(decoratedCls):
