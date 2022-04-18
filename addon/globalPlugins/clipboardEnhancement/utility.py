@@ -87,6 +87,55 @@ CloseClipboard.restype = w.BOOL
 DragQueryFile = s32.DragQueryFile
 DragQueryFile.argtypes = [w.HANDLE, w.UINT, c_void_p, w.UINT]
 
+# Code borrowed from resourceMonitor addon
+# Alternative style (displayed with most PCs): MB, KB, GB, YB, ZB, ...
+alternative = [
+	(1024.0**8.0, ' YB'),
+	(1024.0**7.0, ' ZB'),
+	(1024.0**6.0, ' EB'),
+	(1024.0**5.0, ' PB'),
+	(1024.0**4.0, ' TB'),
+	(1024.0**3.0, ' GB'),
+	(1024.0**2.0, ' MB'),
+	(1024.0**1.0, ' KB'),
+	(1024.0**0.0, (' byte', ' bytes')),
+]
+def calcSize(bytes, system=alternative):
+	for factor, suffix in system:
+		if float(bytes) >= float(factor):
+			break
+	amount = float(bytes / factor)
+	if isinstance(suffix, tuple):
+		singular, multiple = suffix
+		if float(amount) == 1.0:
+			suffix = singular
+		else:
+			suffix = multiple
+	return "{:.2F}{}".format(float(amount), suffix)
+
+
+def isUseUIAForWord():
+	import config
+	obj=api.getFocusObject()
+	if obj.appModule.appName=="winword" and config.conf["UIA"]["useInMSWordWhenAvailable"]:
+		return True
+	else:
+		return False
+
+def paste(obj):
+	sleep(0.5)
+	j = 0
+	while j <10:
+		try:
+			copyToClip(obj.text)
+			obj.flg = 0
+			message(obj.spoken.rstrip('\r\n'))
+			break
+		except:
+			j += 1
+			sleep(0.05)
+	windll.user32.PostMessageW(obj.editor.GetHandle(), PASTED, 0, 0)
+
 class ClipboardMonitor:
 	SOUND = join(dirname(__file__), 'Copy.wav')
 
@@ -200,34 +249,5 @@ class ClipboardMonitor:
 						size += getsize(join(root,n))
 		t = '{}个文件夹,'.format(d) if d else ''
 		t1=f'{f}个文件' if f else ''
-		size = self.convert(size)
+		size=calcSize(size, alternative)
 		return t+t1+'共{}'.format(size)
-
-	def convert(self, s):
-		if s<1024: return f'{s}字节'
-		for i in ('KB', 'MB', 'GB'):
-			s= s/1024
-			if s<1024: return str(round(s, 2))+i
-		return str(round(s, 2))+i
-
-def paste(obj):
-	sleep(0.5)
-	j = 0
-	while j <10:
-		try:
-			copyToClip(obj.text)
-			obj.flg = 0
-			message(obj.spoken.rstrip('\r\n'))
-			break
-		except:
-			j += 1
-			sleep(0.05)
-	windll.user32.PostMessageW(obj.editor.GetHandle(), PASTED, 0, 0)
-
-def isUseUIAForWord():
-	import config
-	obj=api.getFocusObject()
-	if obj.appModule.appName=="winword" and config.conf["UIA"]["useInMSWordWhenAvailable"]:
-		return True
-	else:
-		return False
