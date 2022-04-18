@@ -143,6 +143,17 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 	def script_repeatSpoken(self, gesture):
 		ui.message(self.spoken)
 
+	@scriptHandler.script(
+		description=_("使用较慢的语速和重读单词重复刚听到的内容"),
+	)
+	def script_speakSlowly(self, gesture):
+		sequence = []
+		sequence.append(speech.commands.RateCommand(offset=-30))
+		for text in self.spoken.split():
+			sequence.append(text)
+			sequence.append(speech.commands.EndUtteranceCommand())
+		self.oldSpeak(sequence)
+
 	def newSpeak(self, sequence, *args, **kwargs):
 		data = ""
 		if isinstance(sequence, str):

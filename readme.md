@@ -38,6 +38,7 @@
 | 追加刚听到的内容到剪贴板 | NVDA+Alt+d | NVDA+Alt+d |
 | 追加已选择的内容到剪贴板 | NVDA+Alt+a | NVDA+Alt+a |
 | 重复朗读刚听到的内容 | 未分配 | 未分配 |
+| 使用较慢的语速和重读单词重复刚听到的内容 | 未分配 | 未分配 |
 | 剪贴板第一行 | ctrl+小键盘 斜杠 | NVDA+alt+shift+上光标 |
 | 剪贴板最后一行 | ctrl+小键盘 星号 | NVDA+alt+shift+下光标 |
 | 剪贴板向上十行 | ctrl+小键盘 加号 | NVDA+alt+shift+上翻页 |
