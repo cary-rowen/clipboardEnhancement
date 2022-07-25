@@ -1,6 +1,6 @@
 import time
 from . import sxtwl
-from .constants import *
+from . import constants
 
 def getTime():
 	d = time.localtime()
@@ -8,7 +8,7 @@ def getTime():
 
 def getDate():
 	d = time.localtime()
-	return f'{d.tm_year}年{d.tm_mon}月{d.tm_mday}日,星期{WeekCn[d.tm_wday]}, 第{d.tm_yday}天'
+	return f'{d.tm_year}年{d.tm_mon}月{d.tm_mday}日,星期{constants.WeekCn[d.tm_wday]}, 第{d.tm_yday}天'
 
 def get_jieqi_time(day):
 	# 当日是否有节气
@@ -19,12 +19,12 @@ def get_jieqi_time(day):
 		t = sxtwl.JD2DD(jd )
 		# 注意，t.s是小数，需要四舍五入
 		tt = "时刻:%d:%d:%d"%(t.h, t.m, round(t.s))
-		return f'今日{jqmc[day.getJieQi()]}, {tt}'
+		return f'今日{constants.jqmc[day.getJieQi()]}, {tt}'
 	else:
 		for i in range(2,32):
 			day = day.before(1)
 			if day.hasJieQi():
-				jq = jqmc[day.getJieQi()]
+				jq = constants.jqmc[day.getJieQi()]
 				return f'{jq}第{i}天'
 
 def get_lunar_month_days(day):
@@ -34,32 +34,32 @@ def get_lunar_month_days(day):
 	isRun = True if day.isLunarLeap() else False
 	daynum = sxtwl.getLunarMonthNum(year, month, isRun)
 	r = '小' if daynum < 30 else '大'
-	return '%s%s月%s' % ("闰" if isRun else "", Ymc[day.getLunarMonth()], r)
+	return '%s%s月%s' % ("闰" if isRun else "", constants.Ymc[day.getLunarMonth()], r)
 
 
 def get_lunar_date(day):
 	# 以立春为界的农历
 	s = "%s%s月%s" % (#day.getLunarYear(False), 
-		'闰' if day.isLunarLeap() else '', Ymc[day.getLunarMonth()], rmc[day.getLunarDay()-1])
-#		s = s + '\n今日 %s  %s' % (jqmc[day.getJieQi()], tt)
+		'闰' if day.isLunarLeap() else '', constants.Ymc[day.getLunarMonth()], constants.rmc[day.getLunarDay()-1])
+#		s = s + '\n今日 %s  %s' % (constants.jqmc[day.getJieQi()], tt)
 	return s
 
 def get_gz(day, tm):
 	# 以立春为界的天干地支 （注，如果没有传参，或者传false，是以立春为界的。刚好和getLunarYear相反）
 	yTG = day.getYearGZ()
 	# 年干支
-	ygz = Gan[yTG.tg] + Zhi[yTG.dz]
-	shx = "生肖:" + ShX[yTG.dz]
+	ygz = constants.Gan[yTG.tg] + constants.Zhi[yTG.dz]
+	shx = "生肖:" + constants.ShX[yTG.dz]
 	#月干支
 	mTG = day.getMonthGZ()
-	mgz = Gan[mTG.tg] + Zhi[mTG.dz]
+	mgz = constants.Gan[mTG.tg] + constants.Zhi[mTG.dz]
 	#日干支
 	dTG  = day.getDayGZ()
-	dgz = Gan[dTG.tg] + Zhi[dTG.dz]
+	dgz = constants.Gan[dTG.tg] + constants.Zhi[dTG.dz]
 	#时干支,传24小时制的时间，分早晚子时
 	hour = tm.tm_hour
 	sTG = day.getHourGZ(hour)
-	sgz = Gan[sTG.tg] + Zhi[sTG.dz]
+	sgz = constants.Gan[sTG.tg] + constants.Zhi[sTG.dz]
 	return f'{ygz}年,{mgz}月,{dgz}日,{sgz}时。\n{shx}'
 
 def get_jieqi_before(day):
@@ -67,7 +67,7 @@ def get_jieqi_before(day):
 		day = day.before(1)
 		# hasJieQi的接口比getJieQiJD速度要快，你也可以使用getJieQiJD来判断是否有节气。
 		if day.hasJieQi():
-			jq = jqmc[day.getJieQi()]
+			jq = constants.jqmc[day.getJieQi()]
 			jqDay = '农历' + get_lunar_date(day)
 			return f'{day.getSolarMonth()}月{day.getSolarDay()}日  {jq}, {jqDay}'
 
@@ -75,7 +75,7 @@ def get_jieqi_after(day):
 	while True:
 		day = day.after(1)
 		if day.hasJieQi():
-			jq = jqmc[day.getJieQi()]
+			jq = constants.jqmc[day.getJieQi()]
 			jqDay = '农历' + get_lunar_date(day)
 			return f'{day.getSolarMonth()}月{day.getSolarDay()}日  {jq}, {jqDay}'
 
@@ -118,7 +118,7 @@ while True:
     day = day.after(1)
     # hasJieQi的接口比getJieQiJD速度要快，你也可以使用getJieQiJD来判断是否有节气。
     if day.hasJieQi():
-        print('节气：%s'% jqmc[day.getJieQi()])
+        print('节气：%s'% constants.jqmc[day.getJieQi()])
         #获取节气的儒略日数， 如果说你要计算什么时间的相距多少，直接比对儒略日要方便，相信我。
         jd = day.getJieQiJD()
         # 将儒略日数转换成年月日时秒
@@ -132,11 +132,11 @@ while True:
 def getGZ(gzStr):
     tg = -1
     dz = -1
-    for i, v in enumerate(Gan):
+    for i, v in enumerate(constants.Gan):
         if gzStr[0]  == v:
             tg = i
             break
-    for i, v in enumerate(Zhi):
+    for i, v in enumerate(constants.Zhi):
         if  gzStr[1] == v:
             dz = i
             break   
@@ -171,4 +171,4 @@ def getJieQi():
 def get_constellation():
 	# 星座(有bug?待修复)
 	day,tm = makeDay()
-	return XiZ[day.getConstellation()]+'座'
+	return constants.XiZ[day.getConstellation()]+'座'

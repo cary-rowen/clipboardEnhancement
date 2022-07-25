@@ -10,12 +10,13 @@ from core import callLater
 from keyboardHandler import KeyboardInputGesture
 from tones import beep
 from time import sleep
-from .calendar import *
-from .utility import *
+from . import calendar
+from . import utility 
 from . import constants
 from .clipEditor import MyFrame
 from versionInfo import version_year
 speechModule = speech.speech if version_year>=2021 else speech
+
 
 def disableInSecureMode(decoratedCls):
 	if globalVars.appArgs.secure:
@@ -47,7 +48,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 
 	def clipboard(self):
 		self.editor = MyFrame(gui.mainFrame, title="剪贴板编辑器")
-		self.monitor = ClipboardMonitor(self.editor.GetHandle())
+		self.monitor = utility.ClipboardMonitor(self.editor.GetHandle())
 		self.monitor.customization = self.func
 		callLater(100, self.monitor.get_clipboard_data)
 		self.monitor.StartMonitor()
@@ -57,7 +58,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		self.char, self.line = char, line
 
 	def loadFiles(self):
-		self.Dict = loadDict()
+		self.Dict = utility.loadDict()
 
 	def func(self):
 		self.text = ""
@@ -71,7 +72,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			self.lines = data.splitlines(True)
 		elif isinstance(data, list):
 			self.files = data
-			self.lines = list(fileLists(data))
+			self.lines = list(utility.fileLists(data))
 		elif isinstance(data, bytes):
 			self.lines = ["图片",]
 			self.info = "图片"
@@ -195,9 +196,9 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 
 	@scriptHandler.script(
 		description=_("追加刚听到的内容到剪贴板"), 
-		gesture="kb:NVDA+Alt+D")
+		gesture="kb:nvda+X")
 	def script_append(self, gesture):
-		clip ="" # self._getClipText()
+		clip =""
 		count = scriptHandler.getLastScriptRepeatCount()
 		if count == 1:
 			end = "\n" if not self.text.endswith("\n") and self.text else ""
@@ -228,7 +229,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 
 	def switchSpokenWord(self, d=0):
 # 分词，用[0]得到分割后的单词列表
-		words = segmentWord(self.spoken)[0]
+		words = utility.segmentWord(self.spoken)[0]
 		if not words: return
 		self.spoken_word += d
 		l = len(words)
@@ -245,13 +246,13 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 
 		# 解释当前单词
 		if d == 0:
-			word = translateWord(self.Dict, word)
+			word = utility.translateWord(self.Dict, word)
 			if word:
 				self.flg = 2
 				ui.message(word)
 		# 上/下一个单词
 		else:
-			p = segmentWord(self.spoken)[1]
+			p = utility.segmentWord(self.spoken)[1]
 			self.spoken_char = p[self.spoken_word]-1
 
 	@scriptHandler.script(
@@ -277,9 +278,9 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		gestures=["kb(desktop):Control+Windows+Numpad3", "kb(laptop):NVDA+Windows+RightArrow"])
 	def script_nextSpokenChar(self, gesture):
 		if not self.spoken: return
-		p = segmentWord(self.spoken)[1]
+		p = utility.segmentWord(self.spoken)[1]
 		self.spoken_char += 1
-		self.spoken_word = charPToWordP(p, self.spoken_char)
+		self.spoken_word = utility.charPToWordP(p, self.spoken_char)
 		l = len(self.spoken)
 		if self.spoken_char >= l: 
 			self.spoken_char = l-1
@@ -295,9 +296,9 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		gestures=["kb(desktop):Control+Windows+Numpad1", "kb(laptop):NVDA+Windows+LeftArrow"])
 	def script_previousSpokenChar(self, gesture):
 		if not self.spoken: return
-		p = segmentWord(self.spoken)[1]
+		p = utility.segmentWord(self.spoken)[1]
 		self.spoken_char -= 1
-		self.spoken_word = charPToWordP(p, self.spoken_char)
+		self.spoken_word = utility.charPToWordP(p, self.spoken_char)
 		if self.spoken_char < 0: 
 			self.spoken_char = 0
 			beep(13500, 4)
@@ -356,7 +357,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 				text = self.lines[self.line]
 # 字符位置从这一行的行末开始
 				self.char = len(text)-1
-				words = segmentWord(text)[0]
+				words = utility.segmentWord(text)[0]
 				self.word =  len(words) - 1
 			else: # 如果移动到了第一行的行首
 				self.char = 0
@@ -376,8 +377,8 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			beep(12000, 6)
 
 		if text:
-			p = segmentWord(text)[1]
-			self.word = charPToWordP(p, self.char)
+			p = utility.segmentWord(text)[1]
+			self.word = utility.charPToWordP(p, self.char)
 			speechModule.speakSpelling(text[self.char])
 		else:
 			ui.message("空白")
@@ -385,7 +386,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 	def _switchWord(self, d=0):
 		if self.line < 0: self.line = 0
 		text = self.lines[self.line]
-		words = segmentWord(text)[0]
+		words = utility.segmentWord(text)[0]
 		l = len(words)
 		self.word += d
 		f = False
@@ -397,7 +398,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 # 则切换到下一行
 				self.line+=1
 				text = self.lines[self.line]
-				words = segmentWord(text)[0]
+				words = utility.segmentWord(text)[0]
 				self.word = 0
 				f = True
 			else: # 如果是最后一行，定位到最后一个单词
@@ -410,7 +411,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 # 则切换到前一行
 				self.line -= 1
 				text = self.lines[self.line]
-				words = segmentWord(text)[0]
+				words = utility.segmentWord(text)[0]
 				self.word = len(words)-1
 				f = True
 # 如果是第一行，定位到第一个单词
@@ -419,7 +420,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			beep(13500, 4)
 
 		if not d ==0:
-			p = segmentWord(text)[1]
+			p = utility.segmentWord(text)[1]
 			self.char = p[self.word]-1
 
 		word = words[self.word]
@@ -428,7 +429,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		word = word.lower()
 
 		if d == 0:
-			word = translateWord(self.Dict, word)
+			word = utility.translateWord(self.Dict, word)
 			if word: ui.message(word)
 		if f: return
 
@@ -462,7 +463,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		description=_("打开剪贴板内（或刚听到的）网址"), 
 		gestures=["kb(desktop):control+numpadEnter", "kb(laptop):NVDA+Alt+Enter"])
 	def script_openURL(self, gesture):
-		if not (tryOpenURL(self.spoken) or tryOpenURL(self.text)):
+		if not (utility.tryOpenURL(self.spoken) or utility.tryOpenURL(self.text)):
 			ui.message("未找到可供打开的 URL")
 
 	@scriptHandler.script(
@@ -470,25 +471,25 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 	gesture="kb:NVDA+f12")
 	def script_speakDateTime(self, gesture):
 		if scriptHandler.getLastScriptRepeatCount() > 0:
-			ui.message(getDate()+'。\n'+get_constellation())
+			ui.message(calendar.getDate()+'。\n'+calendar.get_constellation())
 		else:
-			ui.message(getTime())
+			ui.message(calendar.getTime())
 
 	@scriptHandler.script(
 		description=_("读出农历日期（连按两次读出本月节气）"), 
 		gesture="kb:NVDA+f11")
 	def script_speakLunarDate(self, gesture):
 		if scriptHandler.getLastScriptRepeatCount() > 0:
-			ui.message(getJieQi())
+			ui.message(calendar.getJieQi())
 		else:
-			ui.message(getLunarDate())
+			ui.message(calendar.getLunarDate())
 
 	@scriptHandler.script(
 		description=_("编辑文档的字数统计"), 
 		gestures=["kb(desktop):windows+numpaddelete", "kb(laptop):NVDA+alt+="])
 	def script_editInfo(self, gesture):
-		if isUseUIAForWord():
-			ui.message("请使用‘朗读状态栏’功能获取该信息。")
+		if utility.isWinword():
+			ui.message("此功能不可用，请使用朗读状态栏功能获取相关信息")
 			return
 		pos = api.getReviewPosition().copy()
 		if not ('_startOffset' in dir(pos) or '_rangeObj' in dir(pos)):
@@ -526,8 +527,8 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		description=_("编辑文档的当前光标位置"), 
 		gestures=["kb(desktop):windows+NumPad5", "kb(laptop):NVDA+alt+\\"])
 	def script_editCurrent(self, gesture):
-		if isUseUIAForWord():
-			ui.message("请使用‘朗读状态栏’功能获取该信息。")
+		if utility.isWinword():
+			ui.message("此功能不可用")
 			return
 		pos = api.getReviewPosition().copy()
 		if not '_startOffset' in dir(pos) and not '_rangeObj' in dir(pos):
@@ -546,7 +547,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			text = speechModule.getFormatFieldSpeech(formatField, formatConfig=constants.formatConfig) if formatField else None
 			if text:
 				text = "， ".join(text)
-				ui.message("{}，列{}".format(text, column))
+				ui.message("{}，{}列".format(text, column))
 			else:
 				ui.message("此处不支持")
 
@@ -589,7 +590,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		if not selectedText:
 			ui.message("请选中要查询的单词或词组")
 			return
-		result = translateWord(self.Dict, selectedText.strip().lower())
+		result = utility.translateWord(self.Dict, selectedText.strip().lower())
 		ui.message(result)
 
 	@scriptHandler.script(
@@ -662,4 +663,4 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		self.monitor.work = False
 		api.copyToClip(self.spoken.rstrip("\r\n"))
 		KeyboardInputGesture.fromName("control+v").send()
-		Thread(target = paste, args=(self,)).start()
+		utility.Thread(target = utility.paste, args=(self,)).start()

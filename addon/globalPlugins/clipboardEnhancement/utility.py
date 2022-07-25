@@ -11,6 +11,7 @@ import ctypes.wintypes as w
 import sys
 from os import walk
 from nvwave import playWaveFile
+from tones import beep
 from time import sleep
 
 def fileLists(files):
@@ -87,7 +88,6 @@ CloseClipboard.restype = w.BOOL
 DragQueryFile = s32.DragQueryFile
 DragQueryFile.argtypes = [w.HANDLE, w.UINT, c_void_p, w.UINT]
 
-# Code borrowed from resourceMonitor addon
 # Alternative style (displayed with most PCs): MB, KB, GB, YB, ZB, ...
 alternative = [
 	(1024.0**8.0, ' YB'),
@@ -100,6 +100,8 @@ alternative = [
 	(1024.0**1.0, ' KB'),
 	(1024.0**0.0, (' byte', ' bytes')),
 ]
+
+
 def calcSize(bytes, system=alternative):
 	for factor, suffix in system:
 		if float(bytes) >= float(factor):
@@ -113,14 +115,13 @@ def calcSize(bytes, system=alternative):
 			suffix = multiple
 	return "{:.2F}{}".format(float(amount), suffix)
 
-
-def isUseUIAForWord():
+def isWinword():
 	import config
 	obj=api.getFocusObject()
-	if obj.appModule.appName=="winword" and config.conf["UIA"]["useInMSWordWhenAvailable"]:
+	if obj.appModule.appName == "winword" and config.conf["UIA"]["allowInMSWord"]==3:
 		return True
-	else:
-		return False
+	elif obj.appModule.appName == "notepad++": return True
+	else: return False
 
 def paste(obj):
 	sleep(0.5)
@@ -177,9 +178,7 @@ class ClipboardMonitor:
 		self.__mhf = None
 
 	def get_clipboard_data(self):
-		if not OpenClipboard(None):
-			CloseClipboard()
-			OpenClipboard(None)
+		self.open_clipboard()
 		formats = []
 		n = 0
 		while True:
@@ -203,11 +202,20 @@ class ClipboardMonitor:
 			self.data = None
 		self.customization()
 
-	def get_clip_text(self):
-		text = ""
+	def open_clipboard(self, i=10):
 		if not OpenClipboard(None):
 			CloseClipboard()
-			OpenClipboard(None)
+			while i > 0:
+				sleep(0.1)
+				if OpenClipboard(None):
+					break
+				i -= 1
+			else:
+				beep(600, 50)
+
+	def get_clip_text(self):
+		text = ""
+		self.open_clipboard()
 		h_clip_mem = GetClipboardData(CF_UNICODETEXT)
 		text = wstring_at(GlobalLock(h_clip_mem))
 		GlobalUnlock(h_clip_mem)
@@ -216,9 +224,7 @@ class ClipboardMonitor:
 
 	def get_clip_file_list(self):
 		files = []
-		if not OpenClipboard(None):
-			CloseClipboard()
-			OpenClipboard(None)
+		self.open_clipboard()
 		h_hdrop = GetClipboardData(CF_HDROP)
 		if not h_hdrop: return
 		FS_ENCODING = sys.getfilesystemencoding()
