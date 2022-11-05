@@ -25,7 +25,7 @@ addon_info = {
 	# Translators: Long description to be shown for this add-on on add-on information from add-ons manager
 	"addon_description": _("""对剪贴板和刚听到的内容的增强支持。"""),
 	# version
-	"addon_version": "2.4.5",
+	"addon_version": "2.4.8",
 	# Author(s)
 	"addon_author": "大可 <chuanqi.z@qq.com>; Cary-rowen <manchen_0528@outlook.com>",
 	# URL for the add-on documentation support

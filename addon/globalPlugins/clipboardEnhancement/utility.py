@@ -1,18 +1,20 @@
 import api
-from api import copyToClip
-from ui import message
-from os.path import basename, join, dirname, isfile, getsize
 import re
 import webbrowser
+import ctypes.wintypes as w
+import sys
+
 from pickle import load
 from threading import Thread
 from ctypes import windll, WINFUNCTYPE, c_int, c_void_p, c_buffer, sizeof, wstring_at
-import ctypes.wintypes as w
-import sys
 from os import walk
-from nvwave import playWaveFile
-from tones import beep
+from logHandler import log
+from api import copyToClip
+from ui import message
+from os.path import basename, join, dirname, isfile, getsize
 from time import sleep
+
+from . import cues
 
 def fileLists(files):
 	l = len(files)
@@ -115,13 +117,12 @@ def calcSize(bytes, system=alternative):
 			suffix = multiple
 	return "{:.2F}{}".format(float(amount), suffix)
 
-def isWinword():
+def isSupport():
 	import config
 	obj=api.getFocusObject()
-	if obj.appModule.appName == "winword" and config.conf["UIA"]["allowInMSWord"]==3:
-		return True
-	elif obj.appModule.appName == "notepad++": return True
-	else: return False
+	if obj.appModule.appName == "winword" and config.conf["UIA"]["allowInMSWord"]==3: return False
+	elif obj.appModule.appName == "notepad++": return False
+	else: return True
 
 def paste(obj):
 	sleep(0.5)
@@ -138,7 +139,6 @@ def paste(obj):
 	windll.user32.PostMessageW(obj.editor.GetHandle(), PASTED, 0, 0)
 
 class ClipboardMonitor:
-	SOUND = join(dirname(__file__), 'Copy.wav')
 
 	def __init__(self, handle=None):
 		self.handle = handle
@@ -164,7 +164,7 @@ class ClipboardMonitor:
 			self.work = False
 			Thread(target=ClipboardMonitor.workReset, args=(self,)).start()
 			Thread(target=ClipboardMonitor.get_clipboard_data, args=(self,)).start()
-			playWaveFile(self.SOUND)
+			cues.Copy()
 		return windll.user32.CallWindowProcA(self.__pre_handle, hwnd, msg, wParam, lParam)
 
 	def StartMonitor(self):
@@ -211,7 +211,7 @@ class ClipboardMonitor:
 					break
 				i -= 1
 			else:
-				beep(600, 50)
+				log.debugWarning("Attempt to open clipboard failed.")
 
 	def get_clip_text(self):
 		text = ""

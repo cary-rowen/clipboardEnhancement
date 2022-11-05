@@ -8,12 +8,14 @@ import textInfos
 import speech
 from core import callLater
 from keyboardHandler import KeyboardInputGesture
-from tones import beep
 from time import sleep
 from . import calendar
 from . import utility 
 from . import constants
+from . import cues
 from .clipEditor import MyFrame
+from . import NAVScreenshot
+
 from versionInfo import version_year
 speechModule = speech.speech if version_year>=2021 else speech
 
@@ -129,11 +131,11 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		self.line += step
 		if self.line < 0:
 			self.line = 0
-			beep(9800, 5)
+			cues.StartOrEnd()
 		if self.line >= len(self.lines):
 			self.line = len(self.lines) - 1
-			beep(9800, 5)
-		if self.files: beep(6500, 10, 30, 30)
+			cues.StartOrEnd()
+		if self.files: cues.FileInClipboard()
 		ui.message(self.lines[self.line])
 		self.word = self.char = -1
 
@@ -235,10 +237,10 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		l = len(words)
 		if self.spoken_word>=l:
 			self.spoken_word=l-1
-			beep(13500, 4)
+			cues.LineBoundary()
 		if self.spoken_word<0:
 			self.spoken_word=0
-			beep(13500, 4)
+			cues.LineBoundary()
 
 		word = words[self.spoken_word].lower()
 		self.flg = 2
@@ -284,7 +286,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		l = len(self.spoken)
 		if self.spoken_char >= l: 
 			self.spoken_char = l-1
-			beep(13500, 4)
+			cues.LineBoundary()
 		self.flg = 2
 		speechModule.speakSpelling(self.spoken[self.spoken_char])
 
@@ -301,7 +303,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		self.spoken_word = utility.charPToWordP(p, self.spoken_char)
 		if self.spoken_char < 0: 
 			self.spoken_char = 0
-			beep(13500, 4)
+			cues.LineBoundary()
 		self.flg = 2
 		speechModule.speakSpelling(self.spoken[self.spoken_char])
 
@@ -361,7 +363,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 				self.word =  len(words) - 1
 			else: # 如果移动到了第一行的行首
 				self.char = 0
-			beep(12000, 6)
+			cues.LineBoundary()
 # 如果到了行尾
 		elif self.char >= l:
 # 且当前不是最后一行
@@ -374,7 +376,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 				self.word = 0
 			else: # 如果移动到了最后一行的行尾
 				self.char = l-1
-			beep(12000, 6)
+			cues.LineBoundary()
 
 		if text:
 			p = utility.segmentWord(text)[1]
@@ -403,7 +405,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 				f = True
 			else: # 如果是最后一行，定位到最后一个单词
 				self.word = l -1
-			beep(13500, 4)
+			cues.StartOrEnd()
 # 如果是本行内第一个单词
 		elif self.word < 0 and d!=0:
 # 且不是第一行
@@ -417,7 +419,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 # 如果是第一行，定位到第一个单词
 			else:
 				self.word = 0
-			beep(13500, 4)
+			cues.StartOrEnd()
 
 		if not d ==0:
 			p = utility.segmentWord(text)[1]
@@ -488,7 +490,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		description=_("编辑文档的字数统计"), 
 		gestures=["kb(desktop):windows+numpaddelete", "kb(laptop):NVDA+alt+="])
 	def script_editInfo(self, gesture):
-		if utility.isWinword():
+		if not utility.isSupport():
 			ui.message("此功能不可用，请使用朗读状态栏功能获取相关信息")
 			return
 		pos = api.getReviewPosition().copy()
@@ -527,7 +529,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		description=_("编辑文档的当前光标位置"), 
 		gestures=["kb(desktop):windows+NumPad5", "kb(laptop):NVDA+alt+\\"])
 	def script_editCurrent(self, gesture):
-		if utility.isWinword():
+		if not utility.isSupport():
 			ui.message("此功能不可用")
 			return
 		pos = api.getReviewPosition().copy()
@@ -592,6 +594,16 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			return
 		result = utility.translateWord(self.Dict, selectedText.strip().lower())
 		ui.message(result)
+
+	@scriptHandler.script(
+		description=_("截图当前浏览对象到剪贴板"), 
+		gestures=["kb:NVDA+printScreen"])
+	def script_NAVScreenshotToClipboard(self, gesture):
+	# 如果开启了黑屏则给出提示，但仍然会执行截图
+		if NAVScreenshot.isScreenCurtainRunning():
+			ui.message("当前处于黑屏状态")
+		else:
+			NAVScreenshot.navigatorObjectScreenshot()
 
 	@scriptHandler.script(
 		description=_("追加已选文字到剪贴板"), 
