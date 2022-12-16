@@ -161,7 +161,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		if isinstance(sequence, str):
 			data=sequence
 		else:
-			data = "".join([i for i in sequence if isinstance(i, str)])
+			data = " ".join([i for i in sequence if isinstance(i, str)])
 		if self.flg ==1: # 捕获最后依次的朗读
 			self.spoken = data
 			self.spoken_word = self.spoken_char = -1
