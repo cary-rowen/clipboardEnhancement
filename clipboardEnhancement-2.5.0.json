@@ -1,0 +1,29 @@
+{
+	"addonId": "clipboardEnhancement",
+	"displayName": "\u526a\u8d34\u677f\u6717\u8bfb\u589e\u5f3a",
+	"URL": "",
+	"description": "\u5bf9 Windows \u526a\u8d34\u677f\u548c NVDA \u6700\u540e\u4e00\u6b21\u6717\u8bfb\u7684\u5185\u5bb9\u8fdb\u884c\u589e\u5f3a\u652f\u6301\u3002",
+	"sha256": "6c86aca6323796c9a529091c8524eb4667001728ab70e5e6a4a5e0b66438003c",
+	"homepage": "https://github.com/cary-rowen/clipboardEnhancement",
+	"addonVersionName": "2.5.0",
+	"addonVersionNumber": {
+		"major": 2,
+		"minor": 5,
+		"patch": 0
+	},
+	"minNVDAVersion": {
+		"major": 0,
+		"minor": 0,
+		"patch": 0
+	},
+	"lastTestedVersion": {
+		"major": 0,
+		"minor": 0,
+		"patch": 0
+	},
+	"channel": "stable",
+	"publisher": "",
+	"sourceURL": "https://github.com/cary-rowen/clipboardEnhancement",
+	"license": null,
+	"licenseURL": null
+}

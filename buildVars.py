@@ -23,23 +23,29 @@ addon_info = {
 	"addon_summary": _("剪贴板朗读增强"),
 	# Add-on description
 	# Translators: Long description to be shown for this add-on on add-on information from add-ons manager
-	"addon_description": _("""对剪贴板和刚听到的内容的增强支持。"""),
+	"addon_description": _("""对 Windows 剪贴板和 NVDA 最后一次朗读的内容进行增强支持。"""),
 	# version
-	"addon_version": "2.5",
+	"addon_version": "2.5.0",
 	# Author(s)
 	"addon_author": "大可 <chuanqi.z@qq.com>; Cary-rowen <manchen_0528@outlook.com>",
 	# URL for the add-on documentation support
-	"addon_url": None,
+	"addon_url": "https://github.com/cary-rowen/clipboardEnhancement",
+	# URL for the add-on repository where the source code can be found
+	"addon_sourceURL": "https://github.com/cary-rowen/clipboardEnhancement",
 	# Documentation file name
 	"addon_docFileName": "readme.html",
 	# Minimum NVDA version supported (e.g. "2018.3.0", minor version is optional)
-	"addon_minimumNVDAVersion": 2021.1,
+	"addon_minimumNVDAVersion": 2022.1,
 	# Last NVDA version supported/tested (e.g. "2018.4.0", ideally more recent than minimum version)
-	"addon_lastTestedNVDAVersion": 2022.1,
+	"addon_lastTestedNVDAVersion": 2023.1,
 	# Add-on update channel (default is None, denoting stable releases,
 	# and for development releases, use "dev".)
 	# Do not change unless you know what you are doing!
 	"addon_updateChannel": None,
+	# Add-on license such as GPL 2
+	"addon_license": None,
+	# URL for the license document the ad-on is licensed under
+	"addon_licenseURL": None,
 }
 
 # Define the python files that are the sources of your add-on.
@@ -68,5 +74,5 @@ baseLanguage = "zh_CN"
 # Most add-ons do not require additional Markdown extensions.
 # If you need to add support for markup such as tables, fill out the below list.
 # Extensions string must be of the form "markdown.extensions.extensionName"
-# e.g. markdown.extensions.tables to add tables.
+# e.g. "markdown.extensions.tables" to add tables.
 markdownExtensions = ['markdown.extensions.tables', 'markdown.extensions.extra', 'markdown.extensions.smarty', 'markdown.extensions.toc']
