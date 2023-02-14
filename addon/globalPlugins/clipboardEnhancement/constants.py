@@ -9,6 +9,7 @@ formatConfig = {
 	"reportRevisions": False,
 	"reportEmphasis": False,
 	"reportStyle": False,
+	"reportCellBorders": False,
 	"reportAlignment": False,
 	"reportSpellingErrors": False,
 	"reportGrammarErrors": False,
