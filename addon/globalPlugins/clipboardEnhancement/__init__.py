@@ -6,9 +6,9 @@ import gui
 import globalVars
 import textInfos
 import speech
+from logHandler import log
 from core import callLater
 from keyboardHandler import KeyboardInputGesture
-from time import sleep
 from . import calendar
 from . import utility 
 from . import constants
@@ -17,13 +17,14 @@ from .clipEditor import MyFrame
 from . import NAVScreenshot
 
 from versionInfo import version_year
-speechModule = speech.speech if version_year>=2021 else speech
+speechModule = speech.speech if version_year >= 2021 else speech
 
 
 def disableInSecureMode(decoratedCls):
 	if globalVars.appArgs.secure:
 		return globalPluginHandler.GlobalPlugin
 	return decoratedCls
+
 
 @disableInSecureMode
 class GlobalPlugin(globalPluginHandler.GlobalPlugin):
@@ -40,8 +41,8 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		self.text = ""
 		self.files = []
 		self.info = ""
-		self.lines = ["无数据",]
-		self.line = self.char = self.word =-1
+		self.lines = ["无数据"]
+		self.line = self.char = self.word = -1
 		self.monitor = None
 		self.editor = None
 		callLater(100, self.clipboard)
@@ -76,7 +77,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			self.files = data
 			self.lines = list(utility.fileLists(data))
 		elif isinstance(data, bytes):
-			self.lines = ["图片",]
+			self.lines = ["图片"]
 			self.info = "图片"
 
 	@scriptHandler.script(
@@ -135,7 +136,8 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		if self.line >= len(self.lines):
 			self.line = len(self.lines) - 1
 			cues.StartOrEnd()
-		if self.files: cues.FileInClipboard()
+		if self.files:
+			cues.FileInClipboard()
 		ui.message(self.lines[self.line])
 		self.word = self.char = -1
 
@@ -159,16 +161,16 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 	def newSpeak(self, sequence, *args, **kwargs):
 		data = ""
 		if isinstance(sequence, str):
-			data=sequence
+			data = sequence
 		else:
 			data = " ".join([i for i in sequence if isinstance(i, str)])
-		if self.flg ==1: # 捕获最后依次的朗读
+		if self.flg == 1:  # 捕获最后依次的朗读
 			self.spoken = data
 			self.spoken_word = self.spoken_char = -1
-		elif self.flg == 2: # 捕获缓冲区中的朗读
+		elif self.flg == 2:  # 捕获缓冲区中的朗读
 			self.spoken2 = data
 			self.flg = 1
-		else: # 不补货
+		else:  # 不补货
 			self.flg = 1
 		self.oldSpeak(sequence, *args, **kwargs)
 
@@ -190,7 +192,8 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		text = ""
 		try:
 			text = api.getClipData()
-		except:
+		except Exception as e:
+			log.error(e)
 			return text
 		if isinstance(text, str) and text:
 			return text
@@ -200,7 +203,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		description=_("追加刚听到的内容到剪贴板"), 
 		gesture="kb:nvda+X")
 	def script_append(self, gesture):
-		clip =""
+		clip = ""
 		count = scriptHandler.getLastScriptRepeatCount()
 		if count == 1:
 			end = "\n" if not self.text.endswith("\n") and self.text else ""
@@ -221,25 +224,26 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 	def script_clipEditor(self, gesture):
 		if self.editor is None:
 			self.editor = MyFrame(gui.mainFrame, title="剪贴板编辑器")
-		self.editor.edit.SetValue(self.text.replace('\r\n','\n'))
-		point = self.editor.edit.XYToPosition(self.char if self.char>=0 else 0,
-		self.line if self.line>=0 else 0)
+		self.editor.edit.SetValue(self.text.replace('\r\n', '\n'))
+		point = self.editor.edit.XYToPosition(self.char if self.char >= 0 else 0,
+		self.line if self.line >= 0 else 0)
 		self.editor.edit.SetInsertionPoint(point)
 		self.editor.Show(True)
 		self.editor.Maximize(True)
 		self.editor.Raise()
 
 	def switchSpokenWord(self, d=0):
-# 分词，用[0]得到分割后的单词列表
+		# 分词，用 [0] 得到分割后的单词列表
 		words = utility.segmentWord(self.spoken)[0]
-		if not words: return
+		if not words:
+			return
 		self.spoken_word += d
-		l = len(words)
-		if self.spoken_word>=l:
-			self.spoken_word=l-1
+		Count = len(words)
+		if self.spoken_word >= Count:
+			self.spoken_word = Count - 1
 			cues.LineBoundary()
-		if self.spoken_word<0:
-			self.spoken_word=0
+		if self.spoken_word < 0:
+			self.spoken_word = 0
 			cues.LineBoundary()
 
 		word = words[self.spoken_word].lower()
@@ -255,7 +259,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		# 上/下一个单词
 		else:
 			p = utility.segmentWord(self.spoken)[1]
-			self.spoken_char = p[self.spoken_word]-1
+			self.spoken_char = p[self.spoken_word] - 1
 
 	@scriptHandler.script(
 		description=_("刚听到内容的下一个词句"), 
@@ -279,25 +283,24 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		description=_("刚听到内容的下一个字"), 
 		gestures=["kb(desktop):Control+Windows+Numpad3", "kb(laptop):NVDA+Windows+RightArrow"])
 	def script_nextSpokenChar(self, gesture):
-		if not self.spoken: return
+		if not self.spoken:
+			return
 		p = utility.segmentWord(self.spoken)[1]
 		self.spoken_char += 1
 		self.spoken_word = utility.charPToWordP(p, self.spoken_char)
-		l = len(self.spoken)
-		if self.spoken_char >= l: 
-			self.spoken_char = l-1
+		count = len(self.spoken)
+		if self.spoken_char >= count: 
+			self.spoken_char = count - 1
 			cues.LineBoundary()
 		self.flg = 2
 		speechModule.speakSpelling(self.spoken[self.spoken_char])
-
-
-
 
 	@scriptHandler.script(
 		description=_("刚听到内容的上一个字"), 
 		gestures=["kb(desktop):Control+Windows+Numpad1", "kb(laptop):NVDA+Windows+LeftArrow"])
 	def script_previousSpokenChar(self, gesture):
-		if not self.spoken: return
+		if not self.spoken:
+			return
 		p = utility.segmentWord(self.spoken)[1]
 		self.spoken_char -= 1
 		self.spoken_word = utility.charPToWordP(p, self.spoken_char)
@@ -311,8 +314,10 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		description=_("刚听到内容的当前字（连按两次解释）"), 
 		gestures=["kb(desktop):Control+Windows+numpad2", "kb(laptop):NVDA+windows+."])
 	def script_currentSpokenChar(self, gesture):
-		if not self.spoken: return
-		if self.spoken_char < 0: self.spoken_char = 0
+		if not self.spoken:
+			return
+		if self.spoken_char < 0:
+			self.spoken_char = 0
 		self.flg = 2
 		self._charExplanation(self.spoken[self.spoken_char])
 
@@ -320,15 +325,18 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		description=_("剪贴板当前字（连按两次解释）"), 
 		gestures=["kb(desktop):Control+Numpad2", "kb(laptop):NVDA+Alt+."])
 	def script_currentChar(self, gesture):
-		if self.line < 0: self.line = 0
+		if self.line < 0:
+			self.line = 0
 		text = self.lines[self.line]
-		if not text: return ui.message("空白")
-		if self.char < 0: self.char = 0
+		if not text:
+			return ui.message("空白")
+		if self.char < 0:
+			self.char = 0
 		self._charExplanation(text[self.char])
 
 	def _charExplanation(self, c):
 		n = scriptHandler.getLastScriptRepeatCount()
-		if n ==1:
+		if n == 1:
 			speechModule.speakSpelling(c, useCharacterDescriptions=True)
 		elif n == 0:
 			speechModule.speakSpelling(c)
@@ -346,36 +354,29 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		self._switchChar(1)
 
 	def _switchChar(self, d):
-		if self.line < 0: self.line = 0
+		if self.line < 0:
+			self.line = 0
 		text = self.lines[self.line]
 		self.char += d
-		l = len(text)
-# 如果到了行首
-		if self.char < 0:
-# 且当前不是第一行
-			if self.line > 0:
-# 则切换到前一行
-				self.line -= 1
+		count = len(text)
+		if self.char < 0:  # 如果到了行首
+			if self.line > 0:  # 且当前不是第一行
+				self.line -= 1  # 则切换到前一行
 				text = self.lines[self.line]
-# 字符位置从这一行的行末开始
-				self.char = len(text)-1
+				self.char = len(text) - 1  # 字符位置从这一行的行末开始
 				words = utility.segmentWord(text)[0]
-				self.word =  len(words) - 1
-			else: # 如果移动到了第一行的行首
+				self.word = len(words) - 1
+			else:  # 如果移动到了第一行的行首
 				self.char = 0
 			cues.LineBoundary()
-# 如果到了行尾
-		elif self.char >= l:
-# 且当前不是最后一行
-			if self.line < len(self.lines)-1:
-# 则切换到后一行
-				self.line +=1
+		elif self.char >= count:  # 如果到了行尾
+			if self.line < len(self.lines) - 1:  # 且当前不是最后一行
+				self.line += 1  # 则切换到后一行
 				text = self.lines[self.line]
-# 字符位置从这一行的行首开始
-				self.char = 0
+				self.char = 0  # 字符位置从这一行的行首开始
 				self.word = 0
-			else: # 如果移动到了最后一行的行尾
-				self.char = l-1
+			else:  # 如果移动到了最后一行的行尾
+				self.char = count - 1
 			cues.LineBoundary()
 
 		if text:
@@ -386,44 +387,39 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			ui.message("空白")
 
 	def _switchWord(self, d=0):
-		if self.line < 0: self.line = 0
+		if self.line < 0:
+			self.line = 0
 		text = self.lines[self.line]
 		words = utility.segmentWord(text)[0]
-		l = len(words)
+		count = len(words)
 		self.word += d
 		f = False
 
-# 如果是本行内最后一个单词
-		if self.word >= l:
-# 且不是最后一行
-			if self.line < len(self.lines)-1:
-# 则切换到下一行
-				self.line+=1
+		if self.word >= count:  # 如果是本行内最后一个单词
+			if self.line < len(self.lines) - 1:  # 且不是最后一行
+				self.line += 1  # 则切换到下一行
 				text = self.lines[self.line]
 				words = utility.segmentWord(text)[0]
 				self.word = 0
 				f = True
-			else: # 如果是最后一行，定位到最后一个单词
-				self.word = l -1
+			else:  # 如果是最后一行，定位到最后一个单词
+				self.word = count - 1
 			cues.StartOrEnd()
-# 如果是本行内第一个单词
-		elif self.word < 0 and d!=0:
-# 且不是第一行
-			if self.line > 0:
-# 则切换到前一行
-				self.line -= 1
+		elif self.word < 0 and d != 0:  # 如果是本行内第一个单词
+			if self.line > 0:  # 且不是第一行
+				self.line -= 1  # 则切换到前一行
 				text = self.lines[self.line]
 				words = utility.segmentWord(text)[0]
-				self.word = len(words)-1
+				self.word = len(words) - 1
 				f = True
 # 如果是第一行，定位到第一个单词
 			else:
 				self.word = 0
 			cues.StartOrEnd()
 
-		if not d ==0:
+		if not d == 0:
 			p = utility.segmentWord(text)[1]
-			self.char = p[self.word]-1
+			self.char = p[self.word] - 1
 
 		word = words[self.word]
 		ui.message(word)
@@ -432,8 +428,10 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 
 		if d == 0:
 			word = utility.translateWord(self.Dict, word)
-			if word: ui.message(word)
-		if f: return
+			if word:
+				ui.message(word)
+		if f:
+			return
 
 	@scriptHandler.script(
 		description=_("剪贴板上一个词句"), 
@@ -457,7 +455,8 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		description=_("从剪贴板当前行向下朗读"), 
 		gestures=["kb(desktop):Control+Numpad8", "kb(laptop):NVDA+Alt+l"])
 	def script_fromCurrentLine(self, gesture):
-		if self.line < 0: self.line = 0
+		if self.line < 0:
+			self.line = 0
 		text = self.lines[self.line:]
 		speechModule.speak(text)
 
@@ -469,11 +468,11 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			ui.message("未找到可供打开的 URL")
 
 	@scriptHandler.script(
-	description=_("读出时间（连按两次读出日期）"),
-	gesture="kb:NVDA+f12")
+		description=_("读出时间（连按两次读出日期）"),
+		gesture="kb:NVDA+f12")
 	def script_speakDateTime(self, gesture):
 		if scriptHandler.getLastScriptRepeatCount() > 0:
-			ui.message(calendar.getDate()+'。\n'+calendar.get_constellation())
+			ui.message(calendar.getDate() + '。\n' + calendar.get_constellation())
 		else:
 			ui.message(calendar.getTime())
 
