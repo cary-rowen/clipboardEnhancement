@@ -42,8 +42,8 @@
 | 使用较慢的语速和重读单词重复刚听到的内容 | 未分配 | 未分配 |
 | 剪贴板第一行 | ctrl+小键盘 斜杠 | NVDA+alt+shift+上光标 |
 | 剪贴板最后一行 | ctrl+小键盘 星号 | NVDA+alt+shift+下光标 |
-| 剪贴板向上十行 | ctrl+小键盘 加号 | NVDA+alt+shift+上翻页 |
-| 剪贴板向下十行 | ctrl+小键盘 减号 | NVDA+alt+shift+下翻页 |
+| 剪贴板向上十行 | ctrl+小键盘 减号 | NVDA+alt+shift+上翻页 |
+| 剪贴板向下十行 | ctrl+小键盘 加号 | NVDA+alt+shift+下翻页 |
 | 剪贴板上一行 | ctrl+小键盘 7 | NVDA+alt+上光标 |
 | 从剪贴板当前行向下朗读 | ctrl+小键盘 8 | NVDA+alt+l |
 | 剪贴板下一行 | ctrl+小键盘 9 | NVDA+alt+下光标 |
