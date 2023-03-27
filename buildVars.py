@@ -29,7 +29,7 @@ addon_info = {
 	# Author(s)
 	"addon_author": "大可 <chuanqi.z@qq.com>; Cary-rowen <manchen_0528@outlook.com>",
 	# URL for the add-on documentation support
-	"addon_url": "https://github.com/cary-rowen/clipboardEnhancement",
+	"addon_url": "https://www.nvdacn.com/",
 	# URL for the add-on repository where the source code can be found
 	"addon_sourceURL": "https://github.com/cary-rowen/clipboardEnhancement",
 	# Documentation file name
@@ -43,9 +43,9 @@ addon_info = {
 	# Do not change unless you know what you are doing!
 	"addon_updateChannel": None,
 	# Add-on license such as GPL 2
-	"addon_license": None,
+	"addon_license": "GPL v2",
 	# URL for the license document the ad-on is licensed under
-	"addon_licenseURL": None,
+	"addon_licenseURL": "https://www.gnu.org/licenses/gpl-2.0.html",
 }
 
 # Define the python files that are the sources of your add-on.
