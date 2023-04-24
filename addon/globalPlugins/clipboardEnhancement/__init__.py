@@ -464,8 +464,11 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		description=_("打开剪贴板内（或刚听到的）网址"), 
 		gestures=["kb(desktop):control+numpadEnter", "kb(laptop):NVDA+Alt+Enter"])
 	def script_openURL(self, gesture):
-		if not (utility.tryOpenURL(self.spoken) or utility.tryOpenURL(self.text)):
-			ui.message("未找到可供打开的 URL")
+		try:
+			if not (utility.tryOpenURL(self.spoken) or utility.tryOpenURL(self.text)):
+				ui.message("未找到可供打开的 URL或文件路径")
+		except FileNotFoundError as e:
+			ui.message(str(e))
 
 	@scriptHandler.script(
 		description=_("读出时间（连按两次读出日期）"),
