@@ -13,15 +13,18 @@ from api import copyToClip
 from ui import message
 from os.path import basename, join, dirname, isfile, getsize
 from time import sleep
-
 from . import cues
 
+
 def fileLists(files):
-	l = len(files)
-	for i in range(l):
-		yield f'{basename(files[i])}, 第{i+1}之{l}项， {files[i]}'
+	FileList = len(files)
+	for i in range(FileList):
+		yield f'{basename(files[i])}, 第{i+1}之{FileList}项， {files[i]}'
+
 
 m = re.compile(r"[\u4e00-\uf95a]+|[A-Z]?[a-z]+|[A-Z]+(?=[A-Z][a-z])|[0-9]+|[A-Z]+(?![A-Z])")
+
+
 def segmentWord(text):
 	words = []
 	positions = []
@@ -35,27 +38,33 @@ def segmentWord(text):
 		positions.append(0)
 	return words, positions
 
+
 def charPToWordP(word_P, char_P):
-	temp_Char =0
+	temp_Char = 0
 	for i in range(len(word_P)):
-		if i==len(word_P)-1 and char_P>=word_P[i]:
-			temp_Char=i
+		if i == len(word_P) - 1 and char_P >= word_P[i]:
+			temp_Char = i
 			break
-		if char_P >= word_P[i] and char_P < word_P[i+1]:
-			temp_Char=i
+		if char_P >= word_P[i] and char_P < word_P[i + 1]:
+			temp_Char = i
 			break
 	return temp_Char
 
+
 def loadDict():
 	with open(join(dirname(__file__), 'Dict.pickle'), "rb") as fp:
-		dictPickle = load(fp)    
+		dictPickle = load(fp)
 	return dictPickle
+
 
 def translateWord(dict, word):
 	result = dict.get(word, dict.get(re.sub('(ing|ed|s)$', '', word)))
 	return result
 
+
 _pattern_URL = re.compile(r'(https?|ftp|nvdaremote|file)://[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]')
+
+
 def tryOpenURL(text: str) -> bool:
 	if not isinstance(text, str):
 		return False
@@ -63,6 +72,7 @@ def tryOpenURL(text: str) -> bool:
 	if match:
 		return webbrowser.open(match.group(0))
 	return False
+
 
 CF_UNICODETEXT = 0xD
 CF_HDROP = 0xF
@@ -117,17 +127,22 @@ def calcSize(bytes, system=alternative):
 			suffix = multiple
 	return "{:.2F}{}".format(float(amount), suffix)
 
+
 def isSupport():
 	import config
-	obj=api.getFocusObject()
-	if obj.appModule.appName == "winword" and config.conf["UIA"]["allowInMSWord"]==3: return False
-	elif obj.appModule.appName == "notepad++": return False
-	else: return True
+	obj = api.getFocusObject()
+	if obj.appModule.appName == "winword" and config.conf["UIA"]["allowInMSWord"] == 3:
+		return False
+	elif obj.appModule.appName == "notepad++":
+		return False
+	else:
+		return True
+
 
 def paste(obj):
 	sleep(0.5)
 	j = 0
-	while j <10:
+	while j < 10:
 		try:
 			copyToClip(obj.text)
 			obj.flg = 0
@@ -137,6 +152,7 @@ def paste(obj):
 			j += 1
 			sleep(0.05)
 	windll.user32.PostMessageW(obj.editor.GetHandle(), PASTED, 0, 0)
+
 
 class ClipboardMonitor:
 
@@ -183,7 +199,8 @@ class ClipboardMonitor:
 		n = 0
 		while True:
 			n = windll.user32.EnumClipboardFormats(n)
-			if n ==0: break
+			if n == 0:
+				break
 			formats.append(n)
 		CloseClipboard()
 		if 13 in formats:
@@ -226,7 +243,8 @@ class ClipboardMonitor:
 		files = []
 		self.open_clipboard()
 		h_hdrop = GetClipboardData(CF_HDROP)
-		if not h_hdrop: return
+		if not h_hdrop:
+			return
 		FS_ENCODING = sys.getfilesystemencoding()
 		file_count = DragQueryFile(h_hdrop, -1, None, 0)
 		for index in range(file_count):
@@ -243,17 +261,17 @@ class ClipboardMonitor:
 		return files
 
 	def calc(self, files):
-		size=f = d = 0
+		size = f = d = 0
 		for i in files:
 			if isfile(i):
-				f+=1
-				size+=getsize(i)
+				f += 1
+				size += getsize(i)
 			else:
-				d+=1
+				d += 1
 				for root, dd, ff in walk(i):
 					for n in ff:
-						size += getsize(join(root,n))
+						size += getsize(join(root, n))
 		t = '{}个文件夹,'.format(d) if d else ''
-		t1=f'{f}个文件' if f else ''
-		size=calcSize(size, alternative)
-		return t+t1+'共{}'.format(size)
+		t1 = f'{f}个文件' if f else ''
+		size = calcSize(size, alternative)
+		return t + t1 + '共{}'.format(size)
