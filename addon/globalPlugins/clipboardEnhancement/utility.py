@@ -3,6 +3,7 @@ import re
 import webbrowser
 import ctypes.wintypes as w
 import sys
+import os
 
 from pickle import load
 from threading import Thread
@@ -55,13 +56,36 @@ def translateWord(dict, word):
 	result = dict.get(word, dict.get(re.sub('(ing|ed|s)$', '', word)))
 	return result
 
+# Protocol: http, https, ftp, nvdaremote, file
 _pattern_URL = re.compile(r'(https?|ftp|nvdaremote|file)://[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]')
+# SMB path
+_pattern_SMB = re.compile(r'\\\\(?:[^\/|<>?":*\r\n\s]+\\)+[^\/|<>?":*\r\n\s]*')
+# Local driver path
+_pattern_local_driver = re.compile(r'[a-zA-Z]:\\(?:[^\/|<>?":*\r\n\s]+\\)*[^\/|<>?":*\r\n\s]*')
 def tryOpenURL(text: str) -> bool:
 	if not isinstance(text, str):
 		return False
 	match = _pattern_URL.search(text)
 	if match:
 		return webbrowser.open(match.group(0))
+	match = _pattern_local_driver.search(text)
+	if match:
+		path = match.group(0)
+		if os.path.exists(path):
+			command = "start explorer.exe " + path
+			os.system(command)
+			return True
+		else:
+			raise FileNotFoundError(f"找不到文件或目录：\n{path}")
+	match = _pattern_SMB.search(text)
+	if match:
+		path = match.group(0)
+		if os.path.exists(path):
+			command = "start explorer.exe " + path
+			os.system(command)
+			return True
+		else:
+			raise FileNotFoundError(f"找不到文件或目录：\n{path}")
 	return False
 
 CF_UNICODETEXT = 0xD
