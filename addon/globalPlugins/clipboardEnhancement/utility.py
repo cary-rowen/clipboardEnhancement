@@ -59,9 +59,9 @@ def translateWord(dict, word):
 # Protocol: http, https, ftp, nvdaremote, file
 _pattern_URL = re.compile(r'(https?|ftp|nvdaremote|file)://[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]')
 # SMB path
-_pattern_SMB = re.compile(r'\\\\(?:[^\/|<>?":*\r\n\s]+\\)+[^\/|<>?":*\r\n\s]*')
+_pattern_SMB = re.compile(r'\\\\(?:[^\/|<>?":*\r\n\t]+\\)+[^\/|<>?":*\r\n\t]*')
 # Local driver path
-_pattern_local_driver = re.compile(r'[a-zA-Z]:\\(?:[^\/|<>?":*\r\n\s]+\\)*[^\/|<>?":*\r\n\s]*')
+_pattern_local_driver = re.compile(r'[a-zA-Z]:\\(?:[^\/|<>?":*\r\n\t]+\\)*[^\/|<>?":*\r\n\t]*')
 def tryOpenURL(text: str) -> bool:
 	if not isinstance(text, str):
 		return False
