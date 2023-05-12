@@ -3,6 +3,8 @@ import wx
 import os
 import re
 from . import reReplace
+from . import utility 
+from logHandler import log
 
 class MyFrame(wx.Frame):
 	def __init__(self, *args, **kw):
@@ -14,6 +16,8 @@ class MyFrame(wx.Frame):
 		file_menu = wx.Menu()
 		file_menu.Append(wx.ID_OPEN, '打开(&O)\tCtrl+O', '打开文件')
 		update = file_menu.Append(-1, '更新(&U)\tAlt+U', '更新剪贴板数据')
+		self.saveImage = file_menu.Append(0, '保存图片到文件(&I)\tAlt+I', '保存剪贴板图片数据为本地文件')
+		self.Bind(wx.EVT_MENU, self.on_saveImageFromClip, self.saveImage)
 		file_menu.Append(wx.ID_SAVE, '更新并关闭(&X)\tAlt+X', '更新剪贴板数据并关闭剪贴板编辑器')
 		file_menu.Append(wx.ID_SAVEAS, '另存为(&A)\tAlt+A', '另存为文件')
 		file_menu.Append(wx.ID_EXIT, '退出(&C)\tAlt+C', '关闭剪贴板编辑器')
@@ -24,6 +28,8 @@ class MyFrame(wx.Frame):
 		self.Bind(wx.EVT_MENU, self.on_save_as, id=wx.ID_SAVEAS)
 		self.Bind(wx.EVT_MENU, self.on_exit, id=wx.ID_EXIT)
 		menubar.Append(file_menu, '文件(&F)')
+		self.Bind(wx.EVT_MENU_OPEN, self.OnMenuOpen, id=menubar.GetId())
+		self.Bind(wx.EVT_SHOW, self.on_show)
 		edit_menu = wx.Menu()
 		find = edit_menu.Append(-1, '查找(&F)\tCtrl+F', '查找文本')
 		self.Bind(wx.EVT_MENU, self.on_show_find, find)
@@ -225,11 +231,71 @@ class MyFrame(wx.Frame):
 	def on_exit(self, event):
 		self.Show(False)
 
+	def on_saveImageFromClip(self, evt):
+		# Create a file dialog for selecting the save location
+		dialog = wx.FileDialog(self, "选择图片的保存位置", wildcard="Bitmap Files (*.bmp)|*.bmp",
+							   style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
+		try:
+			if dialog.ShowModal() == wx.ID_OK:
+				# Get the selected file path
+				save_path = dialog.GetPath()
+				try:
+					# Get the bitmap data from the clipboard
+					clipboard = wx.Clipboard.Get()
+					clipboard.Open()
+					try:
+						if clipboard.IsSupported(wx.DataFormat(wx.DF_BITMAP)):
+							data = wx.BitmapDataObject()
+							clipboard.GetData(data)
+							bitmap = data.GetBitmap()
+							# Create an image from the bitmap data
+							image = bitmap.ConvertToImage()
+							# Save the image to the user-selected location
+							image.SaveFile(save_path, wx.BITMAP_TYPE_BMP)
+							log.info("Bitmap saved successfully!")
+							wx.MessageBox(f"保存成功： {save_path}", "成功", wx.OK | wx.ICON_INFORMATION)
+						else:
+							log.info("Clipboard does not contain bitmap data.")
+					finally:
+						clipboard.Close()
+				except Exception as e:
+					log.error("Failed to save bitmap: %s", e)
+					wx.MessageBox(f"保存失败: {e}", "错误", wx.OK | wx.ICON_ERROR)
+			else:
+				log.info("Save operation cancelled.")
+		finally:
+			dialog.Destroy()
+
 	def on_size(self, event):
 		self.edit.SetSize(self.GetClientSize())
 		event.Skip()
 
 	def clear_clipboard(self):
 		import winUser
-		with winUser.open_clipboard():
-			winUser.empty_clipboard()
+		with winUser.openClipboard():
+			winUser.emptyClipboard()
+
+	def isImageInClipboard(self):
+		clipboard = wx.Clipboard.Get()
+		clipboard.Open()
+		try:
+			return clipboard.IsSupported(wx.DataFormat(wx.DF_BITMAP))
+		finally:
+			clipboard.Close()
+
+	def RefreshUIForImage(self, isContainImage=False):
+		if isContainImage:
+			self.saveImage.Enable(True)
+			self.Title = "剪贴板编辑器（包含图片）"
+			self.edit.SetValue(utility.getBitmapInfo())
+		else:
+			self.saveImage.Enable(False)
+			self.Title = "剪贴板编辑器"
+
+	def OnMenuOpen(self, event):
+		self.RefreshUIForImage(self.isImageInClipboard())
+
+	def on_show(self, event):
+		if event.IsShown():
+			self.RefreshUIForImage(self.isImageInClipboard())
+		event.Skip()

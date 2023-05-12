@@ -1,5 +1,6 @@
 import api
 import re
+import wx
 import webbrowser
 import ctypes.wintypes as w
 import sys
@@ -22,9 +23,7 @@ def fileLists(files):
 	for i in range(FileList):
 		yield f'{basename(files[i])}, 第{i+1}之{FileList}项， {files[i]}'
 
-
 m = re.compile(r"[\u4e00-\uf95a]+|[A-Z]?[a-z]+|[A-Z]+(?=[A-Z][a-z])|[0-9]+|[A-Z]+(?![A-Z])")
-
 
 def segmentWord(text):
 	words = []
@@ -174,6 +173,23 @@ def paste(obj):
 			sleep(0.05)
 	windll.user32.PostMessageW(obj.editor.GetHandle(), PASTED, 0, 0)
 
+
+def getBitmapInfo():
+	clipboard = wx.Clipboard.Get()
+	clipboard.Open()
+	try:
+		if clipboard.IsSupported(wx.DataFormat(wx.DF_BITMAP)):
+			data_object = wx.BitmapDataObject()
+			clipboard.GetData(data_object)
+			bitmap = data_object.GetBitmap()
+			width = bitmap.GetWidth()
+			height = bitmap.GetHeight()
+			depth = bitmap.GetDepth()
+			return f'分辨率： {width} x {height}，位深度： {depth}'
+		else:
+			return 'No bitmap data in clipboard'
+	finally:
+		clipboard.Close()
 
 class ClipboardMonitor:
 
