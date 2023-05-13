@@ -28,7 +28,9 @@ class MyFrame(wx.Frame):
 		self.Bind(wx.EVT_MENU, self.on_save_as, id=wx.ID_SAVEAS)
 		self.Bind(wx.EVT_MENU, self.on_exit, id=wx.ID_EXIT)
 		menubar.Append(file_menu, '文件(&F)')
-		self.Bind(wx.EVT_MENU_OPEN, self.OnMenuOpen, id=menubar.GetId())
+		# Use the SET FOCUS event instead
+#		self.Bind(wx.EVT_MENU_OPEN, self.OnMenuOpen, id=menubar.GetId())
+		self.Bind(wx.EVT_SET_FOCUS, self.OnSetFocus)
 		self.Bind(wx.EVT_SHOW, self.on_show)
 		edit_menu = wx.Menu()
 		find = edit_menu.Append(-1, '查找(&F)\tCtrl+F', '查找文本')
@@ -86,13 +88,13 @@ class MyFrame(wx.Frame):
 		pass
 
 	def on_next(self, e):
-		self.find_data.SetFlags(self.find_data.GetFlags() | wx.FR_DOWN)  # 启用向下查找
+		self.find_data.SetFlags(self.find_data.GetFlags() | wx.FR_DOWN)
 		if not self.find_data.GetFindString():
 			self.on_show_find(wx.EVT_MENU)
 		else:
 			self.on_find(wx.EVT_FIND)
 	def on_previous(self, event):
-		self.find_data.SetFlags(self.find_data.GetFlags() & ~wx.FR_DOWN)   # 启用向上查找
+		self.find_data.SetFlags(self.find_data.GetFlags() & ~wx.FR_DOWN)
 		if not self.find_data.GetFindString():
 			self.on_show_find(wx.EVT_MENU)
 		else:
@@ -292,8 +294,13 @@ class MyFrame(wx.Frame):
 			self.saveImage.Enable(False)
 			self.Title = "剪贴板编辑器"
 
-	def OnMenuOpen(self, event):
+	def OnSetFocus(self, event):
 		self.RefreshUIForImage(self.isImageInClipboard())
+
+	def OnMenuOpen(self, event):
+		# Use the SET FOCUS event instead
+		pass
+#		self.RefreshUIForImage(self.isImageInClipboard())
 
 	def on_show(self, event):
 		if event.IsShown():
