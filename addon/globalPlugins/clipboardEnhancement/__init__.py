@@ -679,39 +679,3 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		KeyboardInputGesture.fromName("control+v").send()
 		utility.Thread(target = utility.paste, args=(self,)).start()
 
-
-	@scriptHandler.script(
-		description=_("粘贴刚听到的内容"),
-		gestures=["kb:NVDA+alt+`"])
-	def script_saveImageFromClip(self, gesture):
-		import wx
-		if self.editor is None:
-			self.editor = MyFrame(gui.mainFrame, title="剪贴板编辑器")
-		# Create a file dialog for selecting the save location
-		dialog = wx.FileDialog(self.editor, "保存图片", wildcard="Bitmap Files (*.bmp)|*.bmp", style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
-		if dialog.ShowModal() == wx.ID_OK:
-			# Get the selected file path
-			save_path = dialog.GetPath()
-			dialog.Destroy()
-			try:
-				# Get the bitmap data from the clipboard
-				clipboard = wx.Clipboard.Get()
-				clipboard.Open()
-				if clipboard.IsSupported(wx.DataFormat(wx.DF_BITMAP)):
-					data = wx.BitmapDataObject()
-					clipboard.GetData(data)
-					bitmap = data.GetBitmap()
-					# Create an image from the bitmap data
-					image = bitmap.ConvertToImage()
-				# Save the image to the user-selected location
-					image.SaveFile(save_path, wx.BITMAP_TYPE_BMP)
-					# print("Bitmap saved successfully!")
-				else:
-					print("Clipboard does not contain bitmap data.")
-					clipboard.Close()
-			except Exception as e:
-				print("Failed to save bitmap:", str(e))
-		else:
-			print("Save operation cancelled.")
-#		dialog.Destroy()
-
