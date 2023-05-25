@@ -1,0 +1,29 @@
+{
+	"addonId": "clipboardEnhancement",
+	"displayName": "\u526a\u8d34\u677f\u6717\u8bfb\u589e\u5f3a",
+	"URL": "",
+	"description": "\u5bf9 Windows \u526a\u8d34\u677f\u548c NVDA \u6700\u540e\u4e00\u6b21\u6717\u8bfb\u7684\u5185\u5bb9\u8fdb\u884c\u589e\u5f3a\u652f\u6301\u3002",
+	"sha256": "87170ce7a514e9bc14a20390db24f66d1c4959d1922de6648fde289da03b2aa9",
+	"homepage": "https://www.nvdacn.com/",
+	"addonVersionName": "2.6.2",
+	"addonVersionNumber": {
+		"major": 2,
+		"minor": 6,
+		"patch": 2
+	},
+	"minNVDAVersion": {
+		"major": 0,
+		"minor": 0,
+		"patch": 0
+	},
+	"lastTestedVersion": {
+		"major": 0,
+		"minor": 0,
+		"patch": 0
+	},
+	"channel": "stable",
+	"publisher": "",
+	"sourceURL": "https://github.com/cary-rowen/clipboardEnhancement",
+	"license": "GPL v2",
+	"licenseURL": "https://www.gnu.org/licenses/gpl-2.0.html"
+}
