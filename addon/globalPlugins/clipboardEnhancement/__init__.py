@@ -15,9 +15,17 @@ from . import constants
 from . import cues
 from .clipEditor import MyFrame
 from . import NAVScreenshot
+import os
+import json
 
 from versionInfo import version_year
 speechModule = speech.speech if version_year >= 2021 else speech
+
+
+# 剪贴板记录数据文件
+CLIPBOARD_HISTORY_FILENAME = \
+	os.path.abspath(
+		os.path.join(os.path.dirname(__file__), "../../../../", "cphistory.db"))
 
 
 def disableInSecureMode(decoratedCls):
@@ -48,6 +56,36 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		callLater(100, self.clipboard)
 		self.Dict = None
 		callLater(200, self.loadFiles)
+		# 剪贴板记录池，用以存放剪贴板数据
+		self.clipboardDataPool = list()
+		# 夹在剪贴板记录数据文件
+		try:
+			self.clipboardDataPool = self._loadClipboardHistoryFromFile()
+		except Exception as e:
+			log.info(f"夹在剪贴板历史文件失败：{e}")
+			self.clipboardDataPool = []
+		# 剪贴板记录光标
+		self.cursorClipboardHistory = 0
+		# 剪贴板追加拷贝标志，剪贴板记录功能根据此标志来决定剪贴板数据应当拷贝还是追加
+		self.flagAppendClipboard = False
+		""" 首次剪贴板拷贝事件标记，指明是否为插件启动后的首次拷贝
+		如果为首次拷贝，则对比夹在的历史记录中的第一条数据是否与当前数据相同，若相同则说明数据重复，需删除记录
+		这是因为插件启动后，如果剪贴板中存在数据，插件会收到剪贴板拷贝事件，但剪贴板中的数据可能仍是上次插件退出时的数据"""
+		self.firstClipboardEvent = True
+
+	# 保存剪贴板记录数据到磁盘
+	def _saveClipboardHistoryToFile(self):
+		with open(CLIPBOARD_HISTORY_FILENAME, "w") as f:
+			data = json.dumps(self.clipboardDataPool)
+			f.write(data)
+
+	# 从文件夹在剪贴板记录数据
+	def _loadClipboardHistoryFromFile(self):
+		data = None
+		with open(CLIPBOARD_HISTORY_FILENAME, "r") as f:
+			data = f.read()
+			data = json.loads(data)
+		return data
 
 	def clipboard(self):
 		self.editor = MyFrame(gui.mainFrame, title="剪贴板编辑器")
@@ -70,6 +108,28 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		self.lines = ["无数据"]
 		self.word = self.line = self.char = -1
 		data = self.monitor.getData()
+		# 添加数据到剪贴板记录池
+		# 仅能添加文本类型的记录，如果不是文本记录则不添加
+		if isinstance(data, str):
+			self.clipboardDataPool.insert(0, data)
+			# 判断是否为剪贴板追加拷贝，如果为追加拷贝则拷贝当前数据并删除索引=1的上一条数据
+			if self.flagAppendClipboard is True:
+				self.flagAppendClipboard = False
+				if len(self.clipboardDataPool) >= 2:
+					self.clipboardDataPool.pop(1)
+			# 如果为首次剪贴板拷贝事件，则对比记录中的第一条与本次记录是否相同，若相同，仅保留一个
+			if self.firstClipboardEvent is True:
+				self.firstClipboardEvent = False
+				if len(self.clipboardDataPool) >= 2 and data == self.clipboardDataPool[1]:
+					self.clipboardDataPool.pop(0)
+			# 控制剪贴板记录最多不能超过50条
+			maxClipboardHistoryCount = 50
+			if len(self.clipboardDataPool) == (maxClipboardHistoryCount+1):
+				self.clipboardDataPool.pop()
+			# 重置剪贴板记录光标，使其指向当前剪贴板记录
+			self.cursorClipboardHistory = 0
+			# 保存剪贴板历史数据到文件
+			self._saveClipboardHistoryToFile()
 		if isinstance(data, str):
 			self.text = data
 			self.lines = data.splitlines(True)
@@ -203,6 +263,8 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		description=_("追加刚听到的内容到剪贴板"), 
 		gesture="kb:nvda+X")
 	def script_append(self, gesture):
+		# 设置追加剪贴板操作标志为True，剪贴板记录功能需要根据此标志决定剪贴板数据是新增还是合并
+		self.flagAppendClipboard = True
 		clip = ""
 		count = scriptHandler.getLastScriptRepeatCount()
 		if count == 1:
@@ -679,3 +741,93 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		KeyboardInputGesture.fromName("control+v").send()
 		utility.Thread(target = utility.paste, args=(self,)).start()
 
+	def _changeClipboardHistory(self, step):
+		# 参数检查，步长值只能=1货=-1
+		if step != 1 and step != -1:
+			return
+		countHistory = len(self.clipboardDataPool)
+		# 没有剪贴板记录则什么也不做，直接返回
+		if countHistory == 0:
+			return
+		# 计算剪贴板记录光标
+		self.cursorClipboardHistory += step
+		if self.cursorClipboardHistory >= countHistory:
+			self.cursorClipboardHistory = countHistory - 1
+		elif self.cursorClipboardHistory < 0:
+			self.cursorClipboardHistory = 0
+		data = self.clipboardDataPool[self.cursorClipboardHistory]
+		lines = []
+		if isinstance(data, str):
+			lines = data.splitlines(True)
+		elif isinstance(data, list):
+			lines = list(utility.fileLists(data))
+		elif isinstance(data, bytes):
+			lines = [f"图片： {utility.getBitmapInfo()}"]
+		return "".join(lines)
+
+	@scriptHandler.script(
+		description=_("下一条剪贴板记录"),
+		gestures=["kb(desktop):CONTROL+WINDOWS+NUMPADPLUS", "kb(laptop):CONTROL+WINDOWS+]"])
+	def script_nextClipboardHistory(self, gesture):
+		# 如果剪贴板记录为空，提示并退出
+		if len(self.clipboardDataPool) == 0:
+			ui.message("无剪贴板记录")
+			cues.StartOrEnd()
+			return
+		# 如果到达上线索引，给出提示音
+		if self.cursorClipboardHistory == (len(self.clipboardDataPool) - 1):
+			cues.StartOrEnd()
+		data = self._changeClipboardHistory(1)
+		# 仅朗读记录文本的前1000个字符，避免大文本导致NVDA假死
+		ui.message(f"{self.cursorClipboardHistory+1}. {data[:1000]}")
+
+	@scriptHandler.script(
+		description=_("上一条剪贴板记录"),
+		gestures=["kb(desktop):CONTROL+WINDOWS+NUMPADMINUS", "kb(laptop):CONTROL+WINDOWS+["])
+	def script_prevClipboardHistory(self, gesture):
+		# 如果剪贴板记录为空，提示并退出
+		if len(self.clipboardDataPool) == 0:
+			ui.message("无剪贴板记录")
+			cues.StartOrEnd()
+			return
+		# 如果到达下线索引，给出提示音
+		if self.cursorClipboardHistory == 0:
+			cues.StartOrEnd()
+		data = self._changeClipboardHistory(-1)
+		# 仅朗读记录文本的前1000个字符，避免大文本导致NVDA假死
+		ui.message(f"{self.cursorClipboardHistory+1}. {data[:1000]}")
+
+	@scriptHandler.script(
+		description=_("拷贝剪贴板记录到系统剪贴板"),
+		gestures=["kb(desktop):CONTROL+WINDOWS+NUMPADMULTIPLY", "kb(laptop):CONTROL+WINDOWS+\\"])
+	def script_addClipboardHistoryToClipboard(self, gesture):
+		countHistory = len(self.clipboardDataPool)
+		# 没有剪贴板记录则什么也不做，直接返回
+		if countHistory == 0:
+			ui.message("无剪贴板记录")
+			return
+		data = self.clipboardDataPool[self.cursorClipboardHistory]
+		# 从剪贴板记录中删除需要添加的记录，因为拷贝剪贴板记录到系统剪贴板后，会新增一条相同的剪贴板记录
+		self.clipboardDataPool.pop(self.cursorClipboardHistory)
+		api.copyToClip(data)
+
+	@scriptHandler.script(
+		description=_("清空所有剪贴板记录"),
+		gestures=["kb(desktop):CONTROL+WINDOWS+DELETE", "kb(laptop):CONTROL+WINDOWS+DELETE"])
+	def script_emptyClipboardHistory(self, gesture):
+		countRepeat = scriptHandler.getLastScriptRepeatCount()
+		# 如果不是三击手势则退出
+		if countRepeat != 2:
+			return
+		# 如果没有剪贴板记录则提示并返回
+		countClipboardHistory = len(self.clipboardDataPool)
+		if countClipboardHistory == 0:
+			ui.message("无剪贴板记录")
+			return
+		# 清空剪贴板所有记录
+		self.clipboardDataPool = []
+		# 设置剪贴板记录光标指向列表开头
+		self.cursorClipboardHistory = 0
+		ui.message("已成功的清空了所有剪贴板记录")
+		# 保存剪贴板记录数据到磁盘
+		self._saveClipboardHistoryToFile()
