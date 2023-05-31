@@ -813,7 +813,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 
 	@scriptHandler.script(
 		description=_("清空所有剪贴板记录"),
-		gestures=["kb(desktop):CONTROL+WINDOWS+DELETE", "kb(laptop):CONTROL+WINDOWS+DELETE"])
+		gestures=["kb:CONTROL+WINDOWS+DELETE"])
 	def script_emptyClipboardHistory(self, gesture):
 		countRepeat = scriptHandler.getLastScriptRepeatCount()
 		# 如果不是三击手势则退出
