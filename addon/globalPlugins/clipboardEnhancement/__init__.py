@@ -196,9 +196,9 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		if self.line >= len(self.lines):
 			self.line = len(self.lines) - 1
 			cues.StartOrEnd()
+		ui.message(self.lines[self.line])
 		if self.files:
 			cues.FileInClipboard()
-		ui.message(self.lines[self.line])
 		self.word = self.char = -1
 
 	@scriptHandler.script(
@@ -660,14 +660,22 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		ui.message(result)
 
 	@scriptHandler.script(
+		description=_("截图当前窗口到剪贴板"), 
+		gestures=["kb:alt+printScreen"])
+	def script_currentWindowScreenshotToClipboard(self, gesture):
+		ui.message("当前处于黑屏状态，截图前请先关闭黑屏。") if NAVScreenshot.isScreenCurtainRunning() else gesture.send()
+
+	@scriptHandler.script(
+		description=_("截图全屏幕到剪贴板"), 
+		gestures=["kb:printScreen"])
+	def script_ScreenshotToClipboard(self, gesture):
+		ui.message("当前处于黑屏状态，截图前请先关闭黑屏。") if NAVScreenshot.isScreenCurtainRunning() else gesture.send()
+
+	@scriptHandler.script(
 		description=_("截图当前浏览对象到剪贴板"), 
 		gestures=["kb:NVDA+printScreen"])
 	def script_NAVScreenshotToClipboard(self, gesture):
-	# 如果开启了黑屏则给出提示，但仍然会执行截图
-		if NAVScreenshot.isScreenCurtainRunning():
-			ui.message("当前处于黑屏状态")
-		else:
-			NAVScreenshot.navigatorObjectScreenshot()
+		ui.message("当前处于黑屏状态，截图前请先关闭黑屏。") if NAVScreenshot.isScreenCurtainRunning() else NAVScreenshot.navigatorObjectScreenshot()
 
 	@scriptHandler.script(
 		description=_("追加已选文字到剪贴板"), 
