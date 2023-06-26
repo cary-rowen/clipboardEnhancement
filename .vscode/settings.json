@@ -8,9 +8,9 @@
     "python.linting.flake8Enabled": true,
     "python.linting.pylintEnabled": false,
     "python.autoComplete.extraPaths": [
-        "../nvda/source",
-        "../nvda/miscDeps/python"
-        ],	
+        "${workspaceFolder}/../nvda/source", // NVDA 源代码应位于此工作区所在文件夹的父文件夹。
+        "${workspaceFolder}/../nvda/miscDeps/python"
+    ],
     "files.insertFinalNewline": true,
     "files.trimFinalNewlines": true,
     "editor.insertSpaces": false,
@@ -18,8 +18,8 @@
         "reportUndefinedVariable": "none"
     },
     "python.analysis.extraPaths": [
-        "../nvda/source",
-        "../nvda/miscDeps/python"
+        "${workspaceFolder}/../nvda/source",
+        "${workspaceFolder}/../nvda/miscDeps/python"
     ],
-    "python.defaultInterpreterPath": "../nvda/.venv/scripts/python.exe"
+    "python.defaultInterpreterPath": "${workspaceFolder}/../nvda/.venv/scripts/python.exe"
 }
