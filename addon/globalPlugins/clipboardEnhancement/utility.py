@@ -77,7 +77,7 @@ def tryOpenURL(text: str) -> bool:
 	if match:
 		path = match.group(0)
 		if os.path.exists(path):
-			command = "start explorer.exe " + path
+			command = 'start explorer.exe "%s"' %path
 			os.system(command)
 			return True
 		else:
@@ -86,7 +86,7 @@ def tryOpenURL(text: str) -> bool:
 	if match:
 		path = match.group(0)
 		if os.path.exists(path):
-			command = "start explorer.exe " + path
+			command = 'start explorer.exe "%s"' %path
 			os.system(command)
 			return True
 		else:
