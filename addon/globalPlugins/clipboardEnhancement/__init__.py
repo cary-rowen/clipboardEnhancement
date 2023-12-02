@@ -188,17 +188,17 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 	def script_nextLine10(self, gesture):
 		self.switchLine(10)
 
-	def switchLine(self, step):
-		self.line += step
-		if self.line < 0:
-			self.line = 0
-			cues.StartOrEnd()
-		if self.line >= len(self.lines):
-			self.line = len(self.lines) - 1
-			cues.StartOrEnd()
-		ui.message(self.lines[self.line])
+	def switchLine(self, step: int):
+		# Update line and ensure it's within the valid range
+		self.line = max(0, min(self.line + step, len(self.lines) - 1))
+		# Trigger appropriate cues based on the file presence and line position
 		if self.files:
 			cues.FileInClipboard()
+		elif self.line in {0, len(self.lines) - 1}:
+			cues.StartOrEnd()
+		# Display the current line message
+		ui.message(self.lines[self.line])
+		# Reset word and char indices
 		self.word = self.char = -1
 
 	@scriptHandler.script(
@@ -295,33 +295,33 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		self.editor.Raise()
 
 	def switchSpokenWord(self, d=0):
-		# 分词，用 [0] 得到分割后的单词列表
-		words = utility.segmentWord(self.spoken)[0]
+		# 分词
+		words, positions = utility.segmentWord(self.spoken)
 		if not words:
 			return
-		self.spoken_word += d
-		Count = len(words)
-		if self.spoken_word >= Count:
-			self.spoken_word = Count - 1
-			cues.LineBoundary()
-		if self.spoken_word < 0:
-			self.spoken_word = 0
+
+		# 更新单词索引
+		self.spoken_word = min(max(self.spoken_word + d, 0), len(words) - 1)
+
+		# 边界处理
+		if self.spoken_word in {0, len(words) - 1}:
 			cues.LineBoundary()
 
+		# 显示当前单词
 		word = words[self.spoken_word].lower()
 		self.flg = 2
 		ui.message(word)
 
 		# 解释当前单词
 		if d == 0:
-			word = utility.translateWord(self.Dict, word)
-			if word:
+			translated_word = utility.translateWord(self.Dict, word)
+			if translated_word:
 				self.flg = 2
-				ui.message(word)
-		# 上/下一个单词
+				ui.message(translated_word)
 		else:
-			p = utility.segmentWord(self.spoken)[1]
-			self.spoken_char = p[self.spoken_word] - 1
+			# 更新字符索引
+			self.spoken_char = positions[self.spoken_word] - 1
+
 
 	@scriptHandler.script(
 		description=_("刚听到内容的下一个词句"), 
@@ -415,84 +415,90 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 	def script_nextChar(self, gesture):
 		self._switchChar(1)
 
-	def _switchChar(self, d):
-		if self.line < 0:
-			self.line = 0
+	def _switchChar(self, step):
+		# Ensure the line index is within bounds
+		self.line = max(0, self.line)
 		text = self.lines[self.line]
-		self.char += d
+		# Update the character index
+		self.char += step
 		count = len(text)
-		if self.char < 0:  # 如果到了行首
-			if self.line > 0:  # 且当前不是第一行
-				self.line -= 1  # 则切换到前一行
-				text = self.lines[self.line]
-				self.char = len(text) - 1  # 字符位置从这一行的行末开始
-				words = utility.segmentWord(text)[0]
-				self.word = len(words) - 1
-			else:  # 如果移动到了第一行的行首
-				self.char = 0
-			cues.LineBoundary()
-		elif self.char >= count:  # 如果到了行尾
-			if self.line < len(self.lines) - 1:  # 且当前不是最后一行
-				self.line += 1  # 则切换到后一行
-				text = self.lines[self.line]
-				self.char = 0  # 字符位置从这一行的行首开始
-				self.word = 0
-			else:  # 如果移动到了最后一行的行尾
-				self.char = count - 1
-			cues.LineBoundary()
 
+		# Handle character index moving beyond line boundaries
+		if self.char < 0:  # Before the start of the line
+				if self.line > 0:  # Not the first line
+						self.line -= 1
+						text = self.lines[self.line]
+						self.char = len(text) - 1  # Start from the end of the previous line
+						words = utility.segmentWord(text)[0]
+						self.word = len(words) - 1
+				else:  # At the first line
+						self.char = 0
+				cues.LineBoundary()
+
+		elif self.char >= count:  # Beyond the end of the line
+				if self.line < len(self.lines) - 1:  # Not the last line
+						self.line += 1
+						text = self.lines[self.line]
+						self.char = 0  # Start from the beginning of the next line
+						self.word = 0
+				else:  # At the last line
+						self.char = count - 1
+				cues.LineBoundary()
+
+		# Process the character and word
 		if text:
-			p = utility.segmentWord(text)[1]
-			self.word = utility.charPToWordP(p, self.char)
-			speechModule.speakSpelling(text[self.char])
+				p = utility.segmentWord(text)[1]
+				self.word = utility.charPToWordP(p, self.char)
+				speechModule.speakSpelling(text[self.char])
 		else:
-			ui.message("空白")
+				ui.message("空白")
 
-	def _switchWord(self, d=0):
-		if self.line < 0:
-			self.line = 0
+	def _switchWord(self, step=0):
+		# Ensure the line index is within bounds
+		self.line = max(0, self.line)
 		text = self.lines[self.line]
 		words = utility.segmentWord(text)[0]
 		count = len(words)
-		self.word += d
-		f = False
+		self.word += step
+		flag = False
 
-		if self.word >= count:  # 如果是本行内最后一个单词
-			if self.line < len(self.lines) - 1:  # 且不是最后一行
-				self.line += 1  # 则切换到下一行
+		# Handle word index moving beyond word boundaries
+		if self.word >= count:  # Beyond the end of the word list
+			if self.line < len(self.lines) - 1:  # Not the last line
+				self.line += 1
 				text = self.lines[self.line]
 				words = utility.segmentWord(text)[0]
 				self.word = 0
-				f = True
-			else:  # 如果是最后一行，定位到最后一个单词
+				flag = True
+			else:  # At the last line
 				self.word = count - 1
-			cues.StartOrEnd()
-		elif self.word < 0 and d != 0:  # 如果是本行内第一个单词
-			if self.line > 0:  # 且不是第一行
-				self.line -= 1  # 则切换到前一行
+				cues.StartOrEnd()
+		elif self.word < 0 and step != 0:  # Before the start of the word list
+			if self.line > 0:  # Not the first line
+				self.line -= 1
 				text = self.lines[self.line]
 				words = utility.segmentWord(text)[0]
 				self.word = len(words) - 1
-				f = True
-# 如果是第一行，定位到第一个单词
-			else:
+				flag = True
+			else:  # At the first line
 				self.word = 0
 			cues.StartOrEnd()
 
-		if not d == 0:
+		# Update character position if step is not zero
+		if step != 0:
 			p = utility.segmentWord(text)[1]
 			self.char = p[self.word] - 1
+			word = words[self.word]
+			ui.message(word)
+		# Translate and message word if step is zero
+		elif step == 0:
+			word = words[self.word].lower()
+			translated_word = utility.translateWord(self.Dict, word)
+			if translated_word:
+				ui.message(translated_word)
 
-		word = words[self.word]
-		ui.message(word)
-
-		word = word.lower()
-
-		if d == 0:
-			word = utility.translateWord(self.Dict, word)
-			if word:
-				ui.message(word)
-		if f:
+		# Return if the line changed
+		if flag:
 			return
 
 	@scriptHandler.script(
