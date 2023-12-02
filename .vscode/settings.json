@@ -1,25 +1,20 @@
 {
     "editor.accessibilitySupport": "on",
-    "python.linting.enabled": true,
-    "python.linting.maxNumberOfProblems": 10000,
-    "python.linting.flake8Args": [
+    "flake8.args": [
         "--config=flake8.ini"
     ],
-    "python.linting.flake8Enabled": true,
-    "python.linting.pylintEnabled": false,
+    "flake8.importStrategy": "fromEnvironment",
     "python.autoComplete.extraPaths": [
-        "${workspaceFolder}/../nvda/source", // NVDA 源代码应位于此工作区所在文件夹的父文件夹。
-        "${workspaceFolder}/../nvda/miscDeps/python"
+        "../nvda/source",
+        "../nvda/miscDeps/python"
     ],
     "files.insertFinalNewline": true,
     "files.trimFinalNewlines": true,
     "editor.insertSpaces": false,
-    "python.analysis.diagnosticSeverityOverrides": {
-        "reportUndefinedVariable": "none"
-    },
+    "python.analysis.stubPath": "${workspaceFolder}/.vscode/typings",
     "python.analysis.extraPaths": [
-        "${workspaceFolder}/../nvda/source",
-        "${workspaceFolder}/../nvda/miscDeps/python"
+        "../nvda/source",
+        "../nvda/miscDeps/python"
     ],
     "python.defaultInterpreterPath": "${workspaceFolder}/../nvda/.venv/scripts/python.exe"
 }
