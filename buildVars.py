@@ -25,7 +25,7 @@ addon_info = {
 	# Translators: Long description to be shown for this add-on on add-on information from add-ons manager
 	"addon_description": _("""对 Windows 剪贴板和 NVDA 最后一次朗读的内容进行增强支持。"""),
 	# version
-	"addon_version": "2.7.5",
+	"addon_version": "2.7.6",
 	# Author(s)
 	"addon_author": "大可 <chuanqi.z@qq.com>; Cary-rowen <manchen_0528@outlook.com>",
 	# URL for the add-on documentation support

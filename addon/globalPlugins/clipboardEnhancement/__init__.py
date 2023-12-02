@@ -493,9 +493,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		# Translate and message word if step is zero
 		elif step == 0:
 			word = words[self.word].lower()
-			translated_word = utility.translateWord(self.Dict, word)
-			if translated_word:
-				ui.message(translated_word)
+			ui.message(utility.translateWord(self.Dict, word) or word)
 
 		# Return if the line changed
 		if flag:
