@@ -1,17 +1,19 @@
-import api
-import wx
 import os
 import re
-from . import reReplace
-from . import utility 
+
+import api
+import wx
 from logHandler import log
+
+from . import reReplace, utility
+
 
 class MyFrame(wx.Frame):
 	def __init__(self, *args, **kw):
-		wx.Frame.__init__(self, *args, size=(600, 460), **kw)
+		wx.Frame.__init__(self, size=(600, 460), *args, **kw)
 		self.is_exit = False
 		pnl = wx.Panel(self)
-		self.edit = wx.TextCtrl(pnl, pos=(0, 0), style=wx.TE_PROCESS_TAB|wx.TE_MULTILINE|wx.TE_RICH2|wx.HSCROLL)
+		self.edit = wx.TextCtrl(pnl, pos=(0, 0), style=wx.TE_PROCESS_TAB | wx.TE_MULTILINE | wx.TE_RICH2 | wx.HSCROLL)
 		menubar = wx.MenuBar()
 		file_menu = wx.Menu()
 		file_menu.Append(wx.ID_OPEN, '打开(&O)\tCtrl+O', '打开文件')
@@ -29,7 +31,7 @@ class MyFrame(wx.Frame):
 		self.Bind(wx.EVT_MENU, self.on_exit, id=wx.ID_EXIT)
 		menubar.Append(file_menu, '文件(&F)')
 		# Use the SET FOCUS event instead
-#		self.Bind(wx.EVT_MENU_OPEN, self.OnMenuOpen, id=menubar.GetId())
+		# self.Bind(wx.EVT_MENU_OPEN, self.OnMenuOpen, id=menubar.GetId())
 		self.Bind(wx.EVT_SET_FOCUS, self.OnSetFocus)
 		self.Bind(wx.EVT_SHOW, self.on_show)
 		edit_menu = wx.Menu()
@@ -48,7 +50,7 @@ class MyFrame(wx.Frame):
 		menubar.Append(edit_menu, '编辑(&E)')
 		self.SetMenuBar(menubar)
 		self.find_data = wx.FindReplaceData(wx.FR_DOWN)
-		self.edit.SetFont(wx.FFont(7, wx.DEFAULT, wx.NORMAL))
+		# self.edit.SetFont(wx.FFont(7, wx.DEFAULT, wx.NORMAL))
 		self.Bind(wx.EVT_SIZE, self.on_size)
 
 	def on_key_down(self, evt):
@@ -93,6 +95,7 @@ class MyFrame(wx.Frame):
 			self.on_show_find(wx.EVT_MENU)
 		else:
 			self.on_find(wx.EVT_FIND)
+
 	def on_previous(self, event):
 		self.find_data.SetFlags(self.find_data.GetFlags() & ~wx.FR_DOWN)
 		if not self.find_data.GetFindString():
@@ -161,7 +164,7 @@ class MyFrame(wx.Frame):
 			start = text.find(find_text)
 			if start == -1:
 				break
-			start += offset 
+			start += offset
 			self.edit.Replace(start, start + len(find_text), replace_text)
 			offset = self.edit.GetInsertionPoint()
 			count += 1
@@ -181,8 +184,8 @@ class MyFrame(wx.Frame):
 			self.edit.SetInsertionPoint(point)
 
 	def on_open(self, event):
-		wildcard = 'txt文件(*.txt)|*.txt|' \
-			'所有文件 (*.*)|*.*'
+		wildcard = '文本文档 (*.txt)|*.txt|' \
+		'所有文件 (*.*)|*.*'
 		filename = ''
 		dlg = wx.FileDialog(self, message='选择一个文件', defaultDir='', defaultFile="", wildcard=wildcard, style=wx.FD_OPEN | wx.FD_CHANGE_DIR | wx.FD_FILE_MUST_EXIST)
 		if dlg.ShowModal() == wx.ID_OK:
@@ -209,8 +212,8 @@ class MyFrame(wx.Frame):
 
 	def on_save_as(self, evt):
 		text = self.edit.GetValue()
-		wildcard = '文本文件 (*.txt)|*.txt|' \
-			'所有文件 (*.*)|*.*'
+		wildcard = '文本文档 (*.txt)|*.txt|' \
+		'所有文件 (*.*)|*.*'
 		filepath = ''
 		dlg = wx.FileDialog(self, message='文件另存为...', defaultDir='', defaultFile='', wildcard=wildcard, style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
 		if dlg.ShowModal() == wx.ID_OK:
@@ -220,7 +223,6 @@ class MyFrame(wx.Frame):
 			return
 		with open(filepath, 'wb') as f:
 			f.write(text.encode('utf8'))
-
 
 	def on_save(self, event):
 		text = self.edit.GetValue()
@@ -235,8 +237,10 @@ class MyFrame(wx.Frame):
 
 	def on_saveImageFromClip(self, evt):
 		# Create a file dialog for selecting the save location
-		dialog = wx.FileDialog(self, "选择图片的保存位置", wildcard="Bitmap Files (*.bmp)|*.bmp",
-							   style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
+		dialog = wx.FileDialog(
+			self, "选择图片的保存位置", wildcard="Bitmap Files (*.bmp)|*.bmp",
+			style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT
+		)
 		try:
 			if dialog.ShowModal() == wx.ID_OK:
 				# Get the selected file path
@@ -300,7 +304,7 @@ class MyFrame(wx.Frame):
 	def OnMenuOpen(self, event):
 		# Use the SET FOCUS event instead
 		pass
-#		self.RefreshUIForImage(self.isImageInClipboard())
+		# self.RefreshUIForImage(self.isImageInClipboard())
 
 	def on_show(self, event):
 		if event.IsShown():
