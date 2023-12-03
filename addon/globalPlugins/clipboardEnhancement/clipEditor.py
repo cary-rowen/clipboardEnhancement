@@ -34,6 +34,7 @@ class MyFrame(wx.Frame):
 		# self.Bind(wx.EVT_MENU_OPEN, self.OnMenuOpen, id=menubar.GetId())
 		self.Bind(wx.EVT_SET_FOCUS, self.OnSetFocus)
 		self.Bind(wx.EVT_SHOW, self.on_show)
+		self.Bind(wx.EVT_CLOSE, self.on_exit)
 		edit_menu = wx.Menu()
 		find = edit_menu.Append(-1, '查找(&F)\tCtrl+F', '查找文本')
 		self.Bind(wx.EVT_MENU, self.on_show_find, find)
@@ -202,13 +203,6 @@ class MyFrame(wx.Frame):
 					self.edit.SetValue(f.read())
 			except Exception as e:
 				wx.MessageBox(str(e), '错误')
-
-	def destroy(self):
-		if not self.is_exit:
-			self.Show(False)
-			return 0
-		else:
-			return super().Destroy()
 
 	def on_save_as(self, evt):
 		text = self.edit.GetValue()
