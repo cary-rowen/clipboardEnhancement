@@ -20,12 +20,14 @@ addon_info = {
 	# Add-on summary, usually the user visible name of the addon.
 	# Translators: Summary for this add-on
 	# to be shown on installation and add-on information found in Add-ons Manager.
-	"addon_summary": _("剪贴板朗读增强"),
+	"addon_summary": _("Clipboard Enhancement"),
 	# Add-on description
 	# Translators: Long description to be shown for this add-on on add-on information from add-ons manager
-	"addon_description": _("""对 Windows 剪贴板和 NVDA 最后一次朗读的内容进行增强支持。"""),
+	"addon_description": _("""Clipboard Enhancement is an add-on for the NVDA (NonVisual Desktop Access) screen reader.
+This add-on is designed to enhance the functionality related to the clipboard and the text last spoken by NVDA.
+It aims to improve the user experience by providing more control and flexibility over the clipboard content and the text spoken by NVDA."""),
 	# version
-	"addon_version": "2.8.0",
+	"addon_version": "2.8.1",
 	# Author(s)
 	"addon_author": "大可 <chuanqi.z@qq.com>; Cary-rowen <manchen_0528@outlook.com>",
 	# URL for the add-on documentation support
@@ -35,9 +37,9 @@ addon_info = {
 	# Documentation file name
 	"addon_docFileName": "readme.html",
 	# Minimum NVDA version supported (e.g. "2018.3.0", minor version is optional)
-	"addon_minimumNVDAVersion": 2022.1,
+	"addon_minimumNVDAVersion": "2022.1.0",
 	# Last NVDA version supported/tested (e.g. "2018.4.0", ideally more recent than minimum version)
-	"addon_lastTestedNVDAVersion": 2024.1,
+	"addon_lastTestedNVDAVersion": "2024.1.0",
 	# Add-on update channel (default is None, denoting stable releases,
 	# and for development releases, use "dev".)
 	# Do not change unless you know what you are doing!
@@ -56,7 +58,7 @@ addon_info = {
 # pythonSources = ["addon/globalPlugins/*.py"]
 # For more information on SCons Glob expressions please take a look at:
 # https://scons.org/doc/production/HTML/scons-user/apd.html
-pythonSources = ["addon/globalPlugins/clipboardEnhancement/*.py"]
+pythonSources = []
 
 # Files that contain strings for translation. Usually your python sources
 i18nSources = pythonSources + ["buildVars.py"]
@@ -68,7 +70,7 @@ excludedFiles = []
 # Base language for the NVDA add-on
 # If your add-on is written in a language other than english, modify this variable.
 # For example, set baseLanguage to "es" if your add-on is primarily written in spanish.
-baseLanguage = "zh_CN"
+baseLanguage = "en"
 
 # Markdown extensions for add-on documentation
 # Most add-ons do not require additional Markdown extensions.

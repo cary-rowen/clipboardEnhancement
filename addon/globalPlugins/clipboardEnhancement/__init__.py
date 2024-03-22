@@ -123,7 +123,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 				if len(self.clipboardDataPool) >= 2 and data == self.clipboardDataPool[1]:
 					self.clipboardDataPool.pop(0)
 			# 控制剪贴板记录最多不能超过50条
-			maxClipboardHistoryCount = 50
+			maxClipboardHistoryCount = 500
 			if len(self.clipboardDataPool) == (maxClipboardHistoryCount+1):
 				self.clipboardDataPool.pop()
 			# 重置剪贴板记录光标，使其指向当前剪贴板记录
