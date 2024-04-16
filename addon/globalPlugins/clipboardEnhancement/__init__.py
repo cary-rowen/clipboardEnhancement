@@ -737,7 +737,11 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		self.monitor.Stop()
 		self.monitor = None
 		speechModule.speak = self.oldSpeak
-		self.oldSpeak = None
+		# Do not set self.oldSpeak to None.
+		# Since many add-ons can patch speech.speak and since the order in which patching and unpatching is not
+		# well established, we may end up speech.speak restored to None (e.g. clipboardEnhancement and
+		# baiduTranslation)
+		# self.oldSpeak = None
 		if self.editor:
 			self.editor.isExit = True
 			self.editor.Destroy()
