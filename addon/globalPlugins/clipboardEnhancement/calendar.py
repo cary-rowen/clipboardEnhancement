@@ -45,7 +45,6 @@ def get_lunar_date(day):
 	# 以立春为界的农历
 	s = "%s%s月%s" % (  # day.getLunarYear(False),
 		'闰' if day.isLunarLeap() else '', constants.Ymc[day.getLunarMonth()], constants.rmc[day.getLunarDay() - 1])
-		# s = s + '\n今日 %s  %s' % (constants.jqmc[day.getJieQi()], tt)
 	return s
 
 

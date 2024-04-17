@@ -1,4 +1,3 @@
-import os
 import re
 
 import api
@@ -13,7 +12,8 @@ class MyFrame(wx.Frame):
 		wx.Frame.__init__(self, size=(600, 460), *args, **kw)
 		self.is_exit = False
 		pnl = wx.Panel(self)
-		self.edit = wx.TextCtrl(pnl, pos=(0, 0), style=wx.TE_PROCESS_TAB | wx.TE_MULTILINE | wx.TE_RICH2 | wx.HSCROLL)
+		self.edit = wx.TextCtrl(
+			pnl, pos=(0, 0), style=wx.TE_PROCESS_TAB | wx.TE_MULTILINE | wx.TE_RICH2 | wx.HSCROLL)
 		menubar = wx.MenuBar()
 		file_menu = wx.Menu()
 		file_menu.Append(wx.ID_OPEN, '打开(&O)\tCtrl+O', '打开文件')
@@ -179,16 +179,17 @@ class MyFrame(wx.Frame):
 
 	def on_goto(self, event):
 		line = self.edit.PositionToXY(self.edit.GetInsertionPoint())[2]
-		dlg = wx.NumberEntryDialog(self, '', '行号(&L)', '转到指定行', line+1, 1, self.edit.GetNumberOfLines())
+		dlg = wx.NumberEntryDialog(self, '', '行号(&L)', '转到指定行', line + 1, 1, self.edit.GetNumberOfLines())
 		if dlg.ShowModal() == wx.ID_OK:
-			point = self.edit.coordinateToPosition(0, dlg.GetValue()-1)
+			point = self.edit.coordinateToPosition(0, dlg.GetValue() - 1)
 			self.edit.SetInsertionPoint(point)
 
 	def on_open(self, event):
 		wildcard = '文本文档 (*.txt)|*.txt|' \
 		'所有文件 (*.*)|*.*'
 		filename = ''
-		dlg = wx.FileDialog(self, message='选择一个文件', defaultDir='', defaultFile="", wildcard=wildcard, style=wx.FD_OPEN | wx.FD_CHANGE_DIR | wx.FD_FILE_MUST_EXIST)
+		dlg = wx.FileDialog(self, message='选择一个文件', defaultDir='', defaultFile="", wildcard=wildcard,
+		                    style=wx.FD_OPEN | wx.FD_CHANGE_DIR | wx.FD_FILE_MUST_EXIST)
 		if dlg.ShowModal() == wx.ID_OK:
 			filename = dlg.GetPath()
 		dlg.Destroy()
@@ -198,6 +199,7 @@ class MyFrame(wx.Frame):
 			with open(filename) as f:
 				self.edit.SetValue(f.read())
 		except Exception as e:
+			log.warning(f"An unexpected error occurred: {e}")
 			try:
 				with open(filename, encoding='utf-8') as f:
 					self.edit.SetValue(f.read())
@@ -209,7 +211,8 @@ class MyFrame(wx.Frame):
 		wildcard = '文本文档 (*.txt)|*.txt|' \
 		'所有文件 (*.*)|*.*'
 		filepath = ''
-		dlg = wx.FileDialog(self, message='文件另存为...', defaultDir='', defaultFile='', wildcard=wildcard, style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
+		dlg = wx.FileDialog(self, message='文件另存为...', defaultDir='', defaultFile='', wildcard=wildcard,
+		                    style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
 		if dlg.ShowModal() == wx.ID_OK:
 			filepath = dlg.GetPath()
 		dlg.Destroy()

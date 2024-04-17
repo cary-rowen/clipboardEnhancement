@@ -23,7 +23,9 @@ def fileLists(files):
 	for i in range(FileList):
 		yield f'{basename(files[i])}, 第{i+1}之{FileList}项， {files[i]}'
 
+
 m = re.compile(r"[\u4e00-\uf95a]+|[A-Z]?[a-z]+|[A-Z]+(?=[A-Z][a-z])|[0-9]+|[A-Z]+(?![A-Z])")
+
 
 def segmentWord(text):
 	words = []
@@ -61,12 +63,17 @@ def translateWord(dict, word):
 	result = dict.get(word, dict.get(re.sub('(ing|ed|s)$', '', word)))
 	return result
 
+
 # Protocol: http, https, ftp, nvdaremote, file
-_pattern_URL = re.compile(r'(https?|ftp|nvdaremote|file)://[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]')
+_pattern_URL = re.compile(
+	r'(https?|ftp|nvdaremote|file)://[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]')
+
 # SMB path
 _pattern_SMB = re.compile(r'\\\\(?:[^\/|<>?":*\r\n\t]+\\)+[^\/|<>?":*\r\n\t]*')
 # Local driver path
 _pattern_local_driver = re.compile(r'[a-zA-Z]:\\(?:[^\/|<>?":*\r\n\t]+\\)*[^\/|<>?":*\r\n\t]*')
+
+
 def tryOpenURL(text: str) -> bool:
 	if not isinstance(text, str):
 		return False
@@ -77,7 +84,7 @@ def tryOpenURL(text: str) -> bool:
 	if match:
 		path = match.group(0)
 		if os.path.exists(path):
-			command = 'start explorer.exe "%s"' %path
+			command = 'start explorer.exe "%s"' % path
 			os.system(command)
 			return True
 		else:
@@ -86,7 +93,7 @@ def tryOpenURL(text: str) -> bool:
 	if match:
 		path = match.group(0)
 		if os.path.exists(path):
-			command = 'start explorer.exe "%s"' %path
+			command = 'start explorer.exe "%s"' % path
 			os.system(command)
 			return True
 		else:
@@ -190,6 +197,7 @@ def getBitmapInfo():
 			return 'No bitmap data in clipboard'
 	finally:
 		clipboard.Close()
+
 
 class ClipboardMonitor:
 
