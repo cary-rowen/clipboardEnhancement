@@ -233,41 +233,32 @@ class MyFrame(wx.Frame):
 		self.Show(False)
 
 	def on_saveImageFromClip(self, evt):
-		# Create a file dialog for selecting the save location
-		dialog = wx.FileDialog(
-			self, "选择图片的保存位置", wildcard="Bitmap Files (*.bmp)|*.bmp",
-			style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT
+		import sys
+		import os
+		sys.path.append(
+			os.path.abspath(
+			os.path.join(os.path.dirname(__file__), "..", "_py3_contrib")
+			)
 		)
+		from PIL import Image, ImageGrab
+		from io import BytesIO
 		try:
-			if dialog.ShowModal() == wx.ID_OK:
-				# Get the selected file path
-				save_path = dialog.GetPath()
-				try:
-					# Get the bitmap data from the clipboard
-					clipboard = wx.Clipboard.Get()
-					clipboard.Open()
-					try:
-						if clipboard.IsSupported(wx.DataFormat(wx.DF_BITMAP)):
-							data = wx.BitmapDataObject()
-							clipboard.GetData(data)
-							bitmap = data.GetBitmap()
-							# Create an image from the bitmap data
-							image = bitmap.ConvertToImage()
-							# Save the image to the user-selected location
-							image.SaveFile(save_path, wx.BITMAP_TYPE_BMP)
-							log.info("Bitmap saved successfully!")
-							wx.MessageBox(f"保存成功： {save_path}", "成功", wx.OK | wx.ICON_INFORMATION)
-						else:
-							log.info("Clipboard does not contain bitmap data.")
-					finally:
-						clipboard.Close()
-				except Exception as e:
-					log.error("Failed to save bitmap: %s", e)
-					wx.MessageBox(f"保存失败: {e}", "错误", wx.OK | wx.ICON_ERROR)
-			else:
-				log.info("Save operation cancelled.")
+			image = ImageGrab.grabclipboard()
+			if not isinstance(image, Image.Image):
+				return
+			fd = wx.FileDialog(self,
+				# Translators: Please choose the path to save the image
+				_("选择图片保存位置"),
+				wildcard=_("图片文件 (*.png)|*.png"), style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
+			if fd.ShowModal() == wx.ID_OK:
+				path = fd.GetPath()
+				if not path.upper().endswith(".PNG"):
+					path += ".png"
+				image.save(path, format="png")
+		except Exception as e:
+			wx.MessageBox(_(), _("错误"), wx.OK | wx.ICON_ERROR)
 		finally:
-			dialog.Destroy()
+			fd.Destroy()
 
 	def on_size(self, event):
 		self.edit.SetSize(self.GetClientSize())

@@ -18,6 +18,8 @@ from .clipEditor import MyFrame
 from . import NAVScreenshot
 import os
 import json
+import wx
+
 
 from versionInfo import version_year
 speechModule = speech.speech if version_year >= 2021 else speech
@@ -109,6 +111,8 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		self.lines = ["无数据"]
 		self.word = self.line = self.char = -1
 		data = self.monitor.getData()
+		# 缓存剪贴板数据
+		self.data = data
 		# 添加数据到剪贴板记录池
 		# 仅能添加文本类型的记录，如果不是文本记录则不添加
 		if isinstance(data, str):
@@ -893,3 +897,37 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		ui.message("已成功的清空了所有剪贴板记录")
 		# 保存剪贴板记录数据到磁盘
 		self._saveClipboardHistoryToFile()
+
+	@scriptHandler.script(
+		# Translators: Save the image in clipboard to file
+		description=_("将剪贴板图片另存为文件"),
+		gestures=["kb(desktop):NVDA+alt+printscreen", "kb(laptop):NVDA+alt+printscreen"])
+	def script_saveClipboardImageToFile(self, gesture):
+		def saveClipboardImageToFile():
+			import sys
+			import os
+			sys.path.append(
+				os.path.abspath(
+				os.path.join(os.path.dirname(__file__), "..", "_py3_contrib")
+				)
+			)
+			from PIL import Image, ImageGrab
+			from io import BytesIO
+			try:
+				image = ImageGrab.grabclipboard()
+				if not isinstance(image, Image.Image):
+					return
+				fd = wx.FileDialog(gui.mainFrame,
+					# Translators: Please choose the path to save the image
+					_("选择图片保存位置"),
+					wildcard=_("图片文件 (*.png)|*.png"), style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
+				if fd.ShowModal() == wx.ID_OK:
+					path = fd.GetPath()
+					if not path.upper().endswith(".PNG"):
+						path += ".png"
+					image.save(path, format="png")
+			except Exception as e:
+				wx.MessageBox(_(), _("错误"), wx.OK | wx.ICON_ERROR)
+			finally:
+				fd.Destroy()
+		wx.CallAfter(saveClipboardImageToFile)
