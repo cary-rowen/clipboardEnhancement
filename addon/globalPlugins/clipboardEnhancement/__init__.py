@@ -4,19 +4,21 @@ import scriptHandler
 import ui
 import gui
 import globalVars
+import os
 import textInfos
+import sys
 import speech
 import versionInfo
 from logHandler import log
 from core import callLater
 from keyboardHandler import KeyboardInputGesture
+from PIL import Image, ImageGrab
 from . import calendar
 from . import utility
 from . import constants
 from . import cues
 from .clipEditor import MyFrame
 from . import NAVScreenshot
-import os
 import json
 import wx
 
@@ -904,30 +906,26 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		gestures=["kb(desktop):NVDA+alt+printscreen", "kb(laptop):NVDA+alt+printscreen"])
 	def script_saveClipboardImageToFile(self, gesture):
 		def saveClipboardImageToFile():
-			import sys
-			import os
 			sys.path.append(
 				os.path.abspath(
-				os.path.join(os.path.dirname(__file__), "..", "_py3_contrib")
+					os.path.join(os.path.dirname(__file__), "..", "_py3_contrib")
 				)
 			)
-			from PIL import Image, ImageGrab
-			from io import BytesIO
 			try:
 				image = ImageGrab.grabclipboard()
 				if not isinstance(image, Image.Image):
 					return
 				fd = wx.FileDialog(gui.mainFrame,
-					# Translators: Please choose the path to save the image
-					_("选择图片保存位置"),
-					wildcard=_("图片文件 (*.png)|*.png"), style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
+				                   # Translators: Please choose the path to save the image
+				                   _("选择图片保存位置"),
+				                   wildcard=_("图片文件 (*.png)|*.png"), style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
 				if fd.ShowModal() == wx.ID_OK:
 					path = fd.GetPath()
 					if not path.upper().endswith(".PNG"):
 						path += ".png"
 					image.save(path, format="png")
 			except Exception as e:
-				wx.MessageBox(_(), _("错误"), wx.OK | wx.ICON_ERROR)
+				wx.MessageBox(_(e), _("错误"), wx.OK | wx.ICON_ERROR)
 			finally:
 				fd.Destroy()
 		wx.CallAfter(saveClipboardImageToFile)

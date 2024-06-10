@@ -1,4 +1,5 @@
 import api
+import config
 import re
 import wx
 import webbrowser
@@ -156,7 +157,6 @@ def calcSize(bytes, system=alternative):
 
 
 def isSupport():
-	import config
 	obj = api.getFocusObject()
 	if obj.appModule.appName == "winword" and config.conf["UIA"]["allowInMSWord"] == 3:
 		return False

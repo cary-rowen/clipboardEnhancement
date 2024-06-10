@@ -1,9 +1,12 @@
 import re
 
 import api
+import os
 import wx
+import winUser
+import sys
 from logHandler import log
-
+from PIL import Image, ImageGrab
 from . import reReplace, utility
 
 
@@ -233,30 +236,26 @@ class MyFrame(wx.Frame):
 		self.Show(False)
 
 	def on_saveImageFromClip(self, evt):
-		import sys
-		import os
 		sys.path.append(
 			os.path.abspath(
-			os.path.join(os.path.dirname(__file__), "..", "_py3_contrib")
+				os.path.join(os.path.dirname(__file__), "..", "_py3_contrib")
 			)
 		)
-		from PIL import Image, ImageGrab
-		from io import BytesIO
 		try:
 			image = ImageGrab.grabclipboard()
 			if not isinstance(image, Image.Image):
 				return
 			fd = wx.FileDialog(self,
-				# Translators: Please choose the path to save the image
-				_("选择图片保存位置"),
-				wildcard=_("图片文件 (*.png)|*.png"), style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
+			                   # Translators: Please choose the path to save the image
+			                   _("选择图片保存位置"),
+			                   wildcard=_("图片文件 (*.png)|*.png"), style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
 			if fd.ShowModal() == wx.ID_OK:
 				path = fd.GetPath()
 				if not path.upper().endswith(".PNG"):
 					path += ".png"
 				image.save(path, format="png")
 		except Exception as e:
-			wx.MessageBox(_(), _("错误"), wx.OK | wx.ICON_ERROR)
+			wx.MessageBox(_(e), _("错误"), wx.OK | wx.ICON_ERROR)
 		finally:
 			fd.Destroy()
 
@@ -265,7 +264,6 @@ class MyFrame(wx.Frame):
 		event.Skip()
 
 	def clear_clipboard(self):
-		import winUser
 		with winUser.openClipboard():
 			winUser.emptyClipboard()
 

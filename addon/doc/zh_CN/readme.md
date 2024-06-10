@@ -38,6 +38,9 @@
 | 追加刚听到的内容到剪贴板 | NVDA+x | NVDA+x |
 | 追加已选择的内容到剪贴板 | NVDA+Alt+a | NVDA+Alt+a |
 | 截图当前浏览对象到剪贴板 | NVDA+PrintScreen（屏幕打印） | NVDA+PrintScreen（屏幕打印） |
+| 截图当前窗口到剪贴板 | Alt+PrintScreen（屏幕打印） | Alt+PrintScreen（屏幕打印） |
+| 截图全屏幕到剪贴板 | PrintScreen（屏幕打印） | PrintScreen（屏幕打印） |
+| 将剪贴板图片另存为文件 | NVDA+Alt+PrintScreen（屏幕打印） | NVDA+Alt+PrintScreen（屏幕打印） |
 | 重复朗读刚听到的内容 | 未分配 | 未分配 |
 | 使用较慢的语速和重读单词重复刚听到的内容 | 未分配 | 未分配 |
 | 剪贴板第一行 | ctrl+小键盘 斜杠 | NVDA+alt+shift+上光标 |
@@ -78,6 +81,11 @@
 - Cyrille Bougot （代码贡献者）
 
 ## 更新日志
+### V2.8.8 更新日志
+* 增加了将剪贴板图片另存为文件的命令，快捷键为 NVDA+Alt+PrintScreen（屏幕打印键）
+* 更新文档，包含截图当前窗口(Alt+PrintScreen)和截图全屏幕(PrintScreen)的系统快捷键。
+* 一些内部清理工作。
+
 ### V2.8.5 更新日志
 * 适配 NVDA2024.1 新增的“手动朗读”模式。
 * 将原有台式机布局手势更改为在所有布局下生效，与 NVDA 核心手势一致。
