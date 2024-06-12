@@ -233,15 +233,7 @@ class MyFrame(wx.Frame):
 		self.Show(False)
 
 	def on_saveImageFromClip(self, evt):
-		import sys
-		import os
-		sys.path.append(
-			os.path.abspath(
-			os.path.join(os.path.dirname(__file__), "..", "_py3_contrib")
-			)
-		)
-		from PIL import Image, ImageGrab
-		from io import BytesIO
+		from .PIL import Image, ImageGrab
 		try:
 			image = ImageGrab.grabclipboard()
 			if not isinstance(image, Image.Image):

@@ -904,15 +904,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		gestures=["kb(desktop):NVDA+alt+printscreen", "kb(laptop):NVDA+alt+printscreen"])
 	def script_saveClipboardImageToFile(self, gesture):
 		def saveClipboardImageToFile():
-			import sys
-			import os
-			sys.path.append(
-				os.path.abspath(
-				os.path.join(os.path.dirname(__file__), "..", "_py3_contrib")
-				)
-			)
-			from PIL import Image, ImageGrab
-			from io import BytesIO
+			from .PIL import Image, ImageGrab
 			try:
 				image = ImageGrab.grabclipboard()
 				if not isinstance(image, Image.Image):
