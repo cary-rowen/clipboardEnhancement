@@ -27,7 +27,7 @@ addon_info = {
 This add-on is designed to enhance the functionality related to the clipboard and the text last spoken by NVDA.
 It aims to improve the user experience by providing more control and flexibility over the clipboard content and the text spoken by NVDA."""),
 	# version
-	"addon_version": "2.8.5",
+	"addon_version": "2.9.0",
 	# Author(s)
 	"addon_author": "大可 <chuanqi.z@qq.com>; Cary-rowen <manchen_0528@outlook.com>",
 	# URL for the add-on documentation support
@@ -37,7 +37,7 @@ It aims to improve the user experience by providing more control and flexibility
 	# Documentation file name
 	"addon_docFileName": "readme.html",
 	# Minimum NVDA version supported (e.g. "2018.3.0", minor version is optional)
-	"addon_minimumNVDAVersion": "2022.1.0",
+	"addon_minimumNVDAVersion": "2024.1.0",
 	# Last NVDA version supported/tested (e.g. "2018.4.0", ideally more recent than minimum version)
 	"addon_lastTestedNVDAVersion": "2024.1.0",
 	# Add-on update channel (default is None, denoting stable releases,
