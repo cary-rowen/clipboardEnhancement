@@ -252,6 +252,7 @@ class MyFrame(wx.Frame):
 		finally:
 			fd.Destroy()
 
+
 	def on_size(self, event):
 		self.edit.SetSize(self.GetClientSize())
 		event.Skip()
