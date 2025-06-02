@@ -1,34 +1,5 @@
 
 
-formatConfig = {
-	"detectFormatAfterCursor": True,
-	"reportFontName": False,
-	"reportFontSize": False,
-	"reportFontAttributes": False,
-	"reportColor": False,
-	"reportRevisions": False,
-	"reportEmphasis": False,
-	"reportStyle": False,
-	"reportCellBorders": False,
-	"reportAlignment": False,
-	"reportSpellingErrors": False,
-	"reportGrammarErrors": False,
-	"reportPage": True,
-	"reportLineNumber": True,
-	"reportParagraphIndentation": False,
-	"reportTables": False,
-	"reportLinks": False,
-	"reportHeadings": False,
-	"reportLists": False,
-	"reportBlockQuotes": False,
-	"reportComments": False,
-	"reportLineSpacing": False,
-	'reportHighlight': False,
-	"reportBorderStyle": False,
-	'reportSuperscriptsAndSubscripts': False,
-	'reportBookmarks': False,
-}
-
 
 Gan = ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"]
 Zhi = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"]

@@ -154,18 +154,6 @@ def calcSize(bytes, system=alternative):
 			suffix = multiple
 	return "{:.2F}{}".format(float(amount), suffix)
 
-
-def isSupport():
-	import config
-	obj = api.getFocusObject()
-	if obj.appModule.appName == "winword" and config.conf["UIA"]["allowInMSWord"] == 3:
-		return False
-	elif obj.appModule.appName == "notepad++":
-		return False
-	else:
-		return True
-
-
 def paste(obj):
 	sleep(0.5)
 	j = 0

@@ -12,7 +12,6 @@ from core import callLater
 from keyboardHandler import KeyboardInputGesture
 from . import calendar
 from . import utility
-from . import constants
 from . import cues
 from .clipEditor import MyFrame
 from . import NAVScreenshot
@@ -584,77 +583,6 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			ui.message(calendar.getJieQi())
 		else:
 			ui.message(calendar.getLunarDate())
-
-	@scriptHandler.script(
-		description=_("编辑文档的字数统计"),
-		gestures=["kb:windows+numpaddelete", "kb(laptop):NVDA+alt+="],
-		**speakOnDemand)
-	def script_editInfo(self, gesture):
-		if not utility.isSupport():
-			ui.message("此功能不可用，请使用朗读状态栏功能获取相关信息")
-			return
-		pos = api.getReviewPosition().copy()
-		if not ('_startOffset' in dir(pos) or '_rangeObj' in dir(pos)):
-			ui.message("未获取到相关信息")
-			return
-		if '_startOffset' in dir(pos):
-			pos._endOffset = 387419741
-			pos._startOffset = pos._endOffset - 1
-		else:
-			pos._rangeObj.End = 387419741
-			pos._rangeObj.Start = pos._rangeObj.End - 1
-		formatField = textInfos.FormatField()
-		for field in pos.getTextWithFields(constants.formatConfig):
-			if isinstance(field, textInfos.FieldCommand) and isinstance(field.field, textInfos.FormatField):
-				formatField.update(field.field)
-		repeats = scriptHandler.getLastScriptRepeatCount()
-		if repeats == 0:
-			text = speechModule.getFormatFieldSpeech(
-				formatField, formatConfig=constants.formatConfig) if formatField else None
-			if text:
-				text = "".join(text)
-				if text.find(u"页") >= 0:
-					text = text[1:text.find(u"页") + 1]
-				else:
-					text = text.replace(u"行", u"") + u"航"
-				if '_startOffset' in dir(pos):
-					pos._startOffset = 0
-				else:
-					pos._rangeObj.Start = 0
-				i = len(pos.clipboardText.replace("\r", "").replace("\n", ""))
-				ui.message(u"共" + text + str(i) + u"字")
-			else:
-				ui.message("此处不支持")
-
-	@scriptHandler.script(
-		description=_("编辑文档的当前光标位置"),
-		gestures=["kb:windows+NumPad5", "kb(laptop):NVDA+alt+\\"],
-		**speakOnDemand)
-	def script_editCurrent(self, gesture):
-		if not utility.isSupport():
-			ui.message("此功能不可用")
-			return
-		pos = api.getReviewPosition().copy()
-		if '_startOffset' not in dir(pos) and '_rangeObj' not in dir(pos):
-			ui.message(u"无法获取位置")
-		pos2 = api.getReviewPosition().copy()
-		pos.expand(textInfos.UNIT_LINE)
-		pos.setEndPoint(pos2, "endToEnd")
-		column = len(pos.clipboardText)
-		pos.expand(textInfos.UNIT_LINE)
-		formatField = textInfos.FormatField()
-		for field in pos.getTextWithFields(constants.formatConfig):
-			if isinstance(field, textInfos.FieldCommand) and isinstance(field.field, textInfos.FormatField):
-				formatField.update(field.field)
-		repeats = scriptHandler.getLastScriptRepeatCount()
-		if repeats == 0:
-			text = speechModule.getFormatFieldSpeech(
-				formatField, formatConfig=constants.formatConfig) if formatField else None
-			if text:
-				text = "， ".join(text)
-				ui.message("{}，{}列".format(text, column))
-			else:
-				ui.message("此处不支持")
 
 	@scriptHandler.script(
 		description=_("编辑文档标记开始点"),
