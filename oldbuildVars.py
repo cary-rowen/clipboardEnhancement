@@ -12,6 +12,7 @@
 def _(arg):
 	return arg
 
+
 # Add-on information variables
 addon_info = {
 	# add-on Name/identifier, internal for NVDA
@@ -38,7 +39,7 @@ It aims to improve the user experience by providing more control and flexibility
 	# Minimum NVDA version supported (e.g. "2018.3.0", minor version is optional)
 	"addon_minimumNVDAVersion": "2024.1.0",
 	# Last NVDA version supported/tested (e.g. "2018.4.0", ideally more recent than minimum version)
-	"addon_lastTestedNVDAVersion": "2025.1.0",
+	"addon_lastTestedNVDAVersion": "2024.1.0",
 	# Add-on update channel (default is None, denoting stable releases,
 	# and for development releases, use "dev".)
 	# Do not change unless you know what you are doing!
@@ -69,7 +70,6 @@ excludedFiles = []
 # Base language for the NVDA add-on
 # If your add-on is written in a language other than english, modify this variable.
 # For example, set baseLanguage to "es" if your add-on is primarily written in spanish.
-# You must also edit .gitignore file to specify base language files to be ignored.
 baseLanguage = "en"
 
 # Markdown extensions for add-on documentation
@@ -78,22 +78,3 @@ baseLanguage = "en"
 # Extensions string must be of the form "markdown.extensions.extensionName"
 # e.g. "markdown.extensions.tables" to add tables.
 markdownExtensions = ['markdown.extensions.tables', 'markdown.extensions.extra', 'markdown.extensions.smarty', 'markdown.extensions.toc']
-
-# Custom braille translation tables
-# If your add-on includes custom braille tables (most will not), fill out this dictionary.
-# Each key is a dictionary named according to braille table file name,
-# with keys inside recording the following attributes:
-# displayName (name of the table shown to users and translatable),
-# contracted (contracted (True) or uncontracted (False) braille code),
-# output (shown in output table list),
-# input (shown in input table list).
-brailleTables = {}
-
-# Custom speech symbol dictionaries
-# Symbol dictionary files reside in the locale folder, e.g. `locale\en`, and are named `symbols-<name>.dic`.
-# If your add-on includes custom speech symbol dictionaries (most will not), fill out this dictionary.
-# Each key is the name of the dictionary,
-# with keys inside recording the following attributes:
-# displayName (name of the speech dictionary shown to users and translatable),
-# mandatory (True when always enabled, False when not.
-symbolDictionaries = {}
