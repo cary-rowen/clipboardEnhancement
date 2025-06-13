@@ -178,11 +178,29 @@ class MyFrame(wx.Frame):
 		event.GetDialog().Destroy()
 
 	def on_goto(self, event):
-		line = self.edit.PositionToXY(self.edit.GetInsertionPoint())[2]
-		dlg = wx.NumberEntryDialog(self, '', '行号(&L)', '转到指定行', line + 1, 1, self.edit.GetNumberOfLines())
+		try:
+			_retval, _col, current_line_num = self.edit.PositionToXY(self.edit.GetInsertionPoint())
+		except Exception:
+			current_line_num = 0
+		total_lines = self.edit.GetNumberOfLines()
+		if total_lines == 0:
+			total_lines = 1
+		dlg = wx.NumberEntryDialog(
+			self,
+			'请输入要跳转到的行号:',
+			'行号(&L)',
+			'转到指定行',
+			current_line_num + 1,
+			1,
+			total_lines
+		)
 		if dlg.ShowModal() == wx.ID_OK:
-			point = self.edit.coordinateToPosition(0, dlg.GetValue() - 1)
+			target_line = dlg.GetValue()
+			point = self.edit.XYToPosition(0, target_line - 1)
 			self.edit.SetInsertionPoint(point)
+			self.edit.SetFocus()
+			self.edit.ShowPosition(point)
+		dlg.Destroy()
 
 	def on_open(self, event):
 		wildcard = '文本文档 (*.txt)|*.txt|' \
@@ -234,12 +252,12 @@ class MyFrame(wx.Frame):
 
 	def on_saveImageFromClip(self, evt):
 		from .PIL import Image, ImageGrab
+		fd = None
 		try:
 			image = ImageGrab.grabclipboard()
 			if not isinstance(image, Image.Image):
 				return
 			fd = wx.FileDialog(self,
-				# Translators: Please choose the path to save the image
 				_("选择图片保存位置"),
 				wildcard=_("图片文件 (*.png)|*.png"), style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
 			if fd.ShowModal() == wx.ID_OK:
@@ -248,10 +266,10 @@ class MyFrame(wx.Frame):
 					path += ".png"
 				image.save(path, format="png")
 		except Exception as e:
-			wx.MessageBox(_(), _("错误"), wx.OK | wx.ICON_ERROR)
+			wx.MessageBox(str(e), _("错误"), wx.OK | wx.ICON_ERROR)
 		finally:
-			fd.Destroy()
-
+			if fd:
+				fd.Destroy()
 
 	def on_size(self, event):
 		self.edit.SetSize(self.GetClientSize())

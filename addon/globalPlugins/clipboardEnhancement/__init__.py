@@ -832,11 +832,12 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		gestures=["kb(desktop):NVDA+alt+printscreen", "kb(laptop):NVDA+alt+printscreen"])
 	def script_saveClipboardImageToFile(self, gesture):
 		if hasattr(self, 'isFileDialogOpen') and self.isFileDialogOpen:
-			return  # 如果对话框已经打开，则直接返回
-		self.isFileDialogOpen = True  # 在尝试打开对话框之前设置标志为True
+			return
+		self.isFileDialogOpen = True
 		def saveClipboardImageToFile():
 			if not isinstance(self.data, bytes):
 				ui.message("不是图片数据")
+				self.isFileDialogOpen = False
 				return
 			from .PIL import Image, ImageGrab
 			fd = None
@@ -845,7 +846,6 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 				if not isinstance(image, Image.Image):
 					return
 				fd = wx.FileDialog(gui.mainFrame,
-					# Translators: Please choose the path to save the image
 					_("选择图片保存位置"),
 					wildcard=_("图片文件 (*.png)|*.png"), style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
 				if fd.ShowModal() == wx.ID_OK:
@@ -858,5 +858,5 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			finally:
 				if fd:
 					fd.Destroy()
-				self.isFileDialogOpen = False  # 对话框关闭后，重置标志为False
+				self.isFileDialogOpen = False
 		wx.CallAfter(saveClipboardImageToFile)
