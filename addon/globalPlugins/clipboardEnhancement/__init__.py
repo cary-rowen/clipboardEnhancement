@@ -1,4 +1,5 @@
 import api
+import addonHandler
 import globalPluginHandler
 import scriptHandler
 import ui
@@ -24,6 +25,8 @@ from versionInfo import version_year
 speechModule = speech.speech if version_year >= 2021 else speech
 speakOnDemand = {"speakOnDemand": True} if versionInfo.version_year >= 2024 else {}
 
+addonHandler.initTranslation()
+
 # 剪贴板记录数据文件
 CLIPBOARD_HISTORY_FILENAME = \
 os.path.abspath(
@@ -38,7 +41,7 @@ def disableInSecureMode(decoratedCls):
 
 @disableInSecureMode
 class GlobalPlugin(globalPluginHandler.GlobalPlugin):
-	scriptCategory = "剪贴板增强"
+	scriptCategory = addonHandler.getCodeAddon().manifest['summary']
 	pt = pti = {}
 
 	def __init__(self):
